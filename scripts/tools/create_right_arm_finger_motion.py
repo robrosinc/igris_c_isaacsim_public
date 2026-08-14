@@ -278,8 +278,6 @@ def main() -> None:
         joint_pos[:, index] = arm_position
 
     initial_wrist_hand = np.zeros(len(WRIST_HAND_JOINT_NAMES), dtype=np.float64)
-    initial_wrist_hand[WRIST_HAND_JOINT_NAMES.index("Joint_Wrist_Roll_Left")] = math.pi / 6.0
-    initial_wrist_hand[WRIST_HAND_JOINT_NAMES.index("Joint_Wrist_Roll_Right")] = -math.pi / 6.0
     wrist_hand_pos = np.repeat(initial_wrist_hand[None, :], len(times), axis=0)
     finger_targets = (
         ("r_1_joint_thumb_middle", math.radians(70.0)),

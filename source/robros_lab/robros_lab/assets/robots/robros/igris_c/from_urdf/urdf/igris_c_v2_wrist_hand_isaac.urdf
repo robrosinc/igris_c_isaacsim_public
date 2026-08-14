@@ -413,8 +413,10 @@
       </material>
     </visual>
     <collision>
+      <!-- Exclude the internal coupler volume shared with WristYaw. -->
+      <origin xyz="0 0.008 -0.032" />
       <geometry>
-        <mesh filename="../meshes_v2/igris_c_v2/l_wrist_connector.stl" scale="0.01 0.01 0.01" />
+        <box size="0.028 0.020 0.030" />
       </geometry>
     </collision>
   </link>
@@ -433,8 +435,10 @@
       </material>
     </visual>
     <collision>
+      <!-- Palm-only contact shell; the visual mesh includes internal mounting details. -->
+      <origin xyz="-0.0015 0.0055 0.054" />
       <geometry>
-        <mesh filename="../meshes_v2/igris_c_end_effector/hand/l_palm.stl" scale="0.01 0.01 0.01" />
+        <box size="0.082 0.038 0.092" />
       </geometry>
     </collision>
   </link>
@@ -554,8 +558,10 @@
       </material>
     </visual>
     <collision>
+      <!-- Exclude the internal coupler volume shared with WristYaw. -->
+      <origin xyz="0 -0.008 -0.032" />
       <geometry>
-        <mesh filename="../meshes_v2/igris_c_v2/r_wrist_connector.stl" scale="0.01 0.01 0.01" />
+        <box size="0.028 0.020 0.030" />
       </geometry>
     </collision>
   </link>
@@ -574,8 +580,10 @@
       </material>
     </visual>
     <collision>
+      <!-- Palm-only contact shell; the visual mesh includes internal mounting details. -->
+      <origin xyz="-0.0015 -0.0055 0.054" />
       <geometry>
-        <mesh filename="../meshes_v2/igris_c_end_effector/hand/r_palm.stl" scale="0.01 0.01 0.01" />
+        <box size="0.082 0.038 0.092" />
       </geometry>
     </collision>
   </link>
@@ -633,8 +641,9 @@
       </material>
     </visual>
     <collision>
+      <origin xyz="0.008 0 0.012" />
       <geometry>
-        <mesh filename="../meshes_v2/igris_c_end_effector/hand/l_thumb_proximal.stl" scale="0.01 0.01 0.01" />
+        <box size="0.035 0.018 0.018" />
       </geometry>
     </collision>
   </link>
@@ -653,8 +662,9 @@
       </material>
     </visual>
     <collision>
+      <origin xyz="0 0 0.025" />
       <geometry>
-        <mesh filename="../meshes_v2/igris_c_end_effector/hand/l_thumb_middle.stl" scale="0.01 0.01 0.01" />
+        <cylinder radius="0.008" length="0.034" />
       </geometry>
     </collision>
   </link>
@@ -673,8 +683,9 @@
       </material>
     </visual>
     <collision>
+      <origin xyz="0 0 0.021" />
       <geometry>
-        <mesh filename="../meshes_v2/igris_c_end_effector/hand/l_thumb_distal.stl" scale="0.01 0.01 0.01" />
+        <cylinder radius="0.007" length="0.030" />
       </geometry>
     </collision>
   </link>
@@ -853,8 +864,9 @@
       </material>
     </visual>
     <collision>
+      <origin xyz="0.008 0 0.012" />
       <geometry>
-        <mesh filename="../meshes_v2/igris_c_end_effector/hand/r_thumb_proximal.stl" scale="0.01 0.01 0.01" />
+        <box size="0.035 0.018 0.018" />
       </geometry>
     </collision>
   </link>
@@ -873,8 +885,9 @@
       </material>
     </visual>
     <collision>
+      <origin xyz="0 0 0.025" />
       <geometry>
-        <mesh filename="../meshes_v2/igris_c_end_effector/hand/r_thumb_middle.stl" scale="0.01 0.01 0.01" />
+        <cylinder radius="0.008" length="0.034" />
       </geometry>
     </collision>
   </link>
@@ -893,8 +906,9 @@
       </material>
     </visual>
     <collision>
+      <origin xyz="0 0 0.021" />
       <geometry>
-        <mesh filename="../meshes_v2/igris_c_end_effector/hand/r_thumb_distal.stl" scale="0.01 0.01 0.01" />
+        <cylinder radius="0.007" length="0.030" />
       </geometry>
     </collision>
   </link>

@@ -5,9 +5,26 @@
 ![Python](https://img.shields.io/badge/Python-3.11-3776AB)
 ![License](https://img.shields.io/badge/License-Apache--2.0-blue)
 
-Isaac Lab inference environment for the IGRIS-C humanoid robot. The project runs a fixed 23-joint Student Policy while controlling the wrist and articulated hand through a separate auxiliary motion channel.
+Isaac Lab inference environments for the IGRIS-C humanoid robot. The project supports
+the 23-joint Student motion-tracking policy and an independent 14-joint lower-body
+HugWBC walking policy with a gait-frequency action.
 
-The runtime supports either a fixed standing reference or an offline NPZ motion. Motions without wrist/hand data remain compatible: the Student Policy controls its original 23 joints and the auxiliary controller holds the default wrist and hand pose.
+The Student runtime supports either a fixed standing reference or an offline NPZ
+motion. Motions without wrist/hand data remain compatible: the Student Policy controls
+its original 23 joints and the auxiliary controller holds the default wrist and hand
+pose. The HugWBC runtime accepts its own synchronized base-velocity and upper-body
+command NPZ schema.
+
+The two runtimes share the IGRIS-C asset, but their checkpoints, observations,
+actions, and NPZ schemas are independent:
+
+| Runtime | Checkpoint | Observation | Action | Reference input |
+| --- | --- | ---: | ---: | --- |
+| Student motion tracking | `logs/rsl_rl/igris_c_tracking/student_108.pt` | 1,601 | 23 joint-position actions | Full-body motion-reference NPZ |
+| HugWBC walking | `logs/rsl_rl/igris_c_hugwbc/model_16900.pt` | 280 | 14 lower-body joint-position actions + 1 gait-frequency action | Base-velocity and upper-body command NPZ |
+
+Do not load a HugWBC checkpoint or command NPZ through the Student runner, or a
+Student checkpoint or motion-reference NPZ through the HugWBC runner.
 
 ## Requirements
 
@@ -47,19 +64,23 @@ Use a CUDA 12.8-capable NVIDIA 580-series Linux driver for this project. NVIDIA 
 ```text
 igris_c_isaacsim_public/
 ├── README.md
-├── logs/rsl_rl/igris_c_tracking/
-│   └── student_108.pt                 # Default Student Policy checkpoint
+├── logs/rsl_rl/
+│   ├── igris_c_tracking/student_108.pt
+│   └── igris_c_hugwbc/model_16900.pt
 ├── motion/
 │   ├── recorded_arms.npz
 │   ├── recorded_walk_2.npz
-│   └── right_arm_finger_sequence.npz
+│   ├── right_arm_finger_sequence.npz
+│   └── hugwbc_forward_arm_motion.npz
 ├── scripts/
-│   ├── motion_tracking/
-│   │   └── igris_c_motion_tracking.py  # Main inference entry point
+│   ├── motion_tracking/igris_c_motion_tracking.py
+│   ├── hugwbc/igris_c_hugwbc.py
 │   └── tools/                          # Repository utilities and motion generator
 ├── source/robros_lab/robros_lab/
 │   ├── assets/                         # IGRIS-C robot assets and simulation config
-│   └── tasks/motion_tracking/           # Task, observations, references, and controllers
+│   └── tasks/
+│       ├── motion_tracking/
+│       └── hug_wbc/
 └── third_party/
     ├── IsaacLab/
     └── IsaacSim/
@@ -127,6 +148,8 @@ conda activate isaac_env
 export OMNI_KIT_ACCEPT_EULA=YES
 ```
 
+### Student motion tracking
+
 Run without `--motion_file` to hold the initial standing reference:
 
 ```bash
@@ -143,6 +166,22 @@ logs/rsl_rl/igris_c_tracking/student_108.pt
 
 Use `--checkpoint <path>` to load another compatible checkpoint. Checkpoint files are loaded through PyTorch pickle and must come from a trusted source.
 
+### HugWBC walking
+
+The HugWBC checkpoint has a separate 280-observation, 15-action contract and must use
+its own runner. Run the verified 200-step headless smoke test with:
+
+```bash
+./third_party/IsaacLab/isaaclab.sh -p \
+    scripts/hugwbc/igris_c_hugwbc.py \
+    --checkpoint logs/rsl_rl/igris_c_hugwbc/model_16900.pt \
+    --motion_file motion/hugwbc_forward_arm_motion.npz \
+    --num_envs 1 --headless --max_steps 200
+```
+
+Remove `--headless --max_steps 200` to open the interactive viewer, and add `--loop`
+to repeat the command clip continuously.
+
 ## Motion examples
 
 All included motions run at 50 Hz. Without `--loop`, the final frame is held after playback finishes.
@@ -152,6 +191,7 @@ All included motions run at 50 Hz. Without `--loop`, the final frame is held aft
 | `recorded_arms.npz` | 362 | 7.22 s | No | Recorded upper-body and arm reference; wrist and hand hold their default pose |
 | `recorded_walk_2.npz` | 243 | 4.84 s | No | Recorded walking reference; wrist and hand hold their default pose |
 | `right_arm_finger_sequence.npz` | 901 | 18.00 s | Yes | Raises the right arm, closes and reopens the fingers sequentially, then returns the arm to zero |
+| `hugwbc_forward_arm_motion.npz` | 501 | 10.00 s | Yes | HugWBC base-velocity, upper-body, wrist, and hand command clip |
 
 ### Recorded arm motion
 
@@ -190,6 +230,18 @@ Add `--loop` to repeat any motion:
     --loop
 ```
 
+### HugWBC forward and arm command
+
+This file uses `schema_version="igris_c_hugwbc_command_v1"` and must be replayed
+through the HugWBC runner:
+
+```bash
+./third_party/IsaacLab/isaaclab.sh -p \
+    scripts/hugwbc/igris_c_hugwbc.py \
+    --motion_file motion/hugwbc_forward_arm_motion.npz \
+    --num_envs 1 --loop
+```
+
 ## Runtime options
 
 | Option | Description |
@@ -209,6 +261,8 @@ Add `--loop` to repeat any motion:
 
 ## Control architecture
 
+### Student motion tracking
+
 The Student Policy contract remains fixed while additional robot joints are controlled independently:
 
 ```text
@@ -223,6 +277,31 @@ NPZ reference
 ```
 
 The Student Policy expects 1,601 observations and produces 23 normalized joint-position actions. The auxiliary controller does not alter that checkpoint contract. For coupled fingers, distal targets are calculated immediately before commands are written to the articulation; NPZ files therefore only need to provide the active hand targets.
+
+### HugWBC walking
+
+The HugWBC NPZ provides commands rather than a lower-body trajectory:
+
+```text
+HugWBC command NPZ
+├── base_velocity (vx, vy, yaw_rate)
+│   └── policy observation → policy-generated lower-body actions
+├── waist roll/pitch targets
+│   └── policy observation → policy-generated waist roll/pitch actions
+└── waist yaw + left/right arm targets
+    └── direct environment joint-position commands
+
+Optional wrist/hand channel
+├── 6 wrist + 12 active finger targets
+└── 10 distal finger targets computed by the coupling controller
+
+HugWBC actor: 280 observations → 14 lower-body actions + 1 gait-frequency action
+```
+
+The 14 lower-body joint trajectories and the gait-frequency action are generated by
+the policy and are not stored in the command NPZ. Consequently,
+`hugwbc_forward_arm_motion.npz` is not interchangeable with the full-body reference
+NPZ files used by Student motion tracking.
 
 ## License
 

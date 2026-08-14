@@ -15,8 +15,13 @@ see the [Motion Tracking task README](../source/robros_lab/robros_lab/tasks/moti
 | `recorded_arms.npz` | 50 | 362 | 7.22 s | 23 | None | Recorded upper-body/arm motion |
 | `recorded_walk_2.npz` | 50 | 243 | 4.84 s | 23 | None | Recorded walking motion |
 | `right_arm_finger_sequence.npz` | 50 | 901 | 18.00 s | 23 | 18 | Generated right-arm and sequential finger motion |
+| `hugwbc_forward_arm_motion.npz` | 50 | 501 | 10.00 s | N/A | 18 | HugWBC base-velocity, upper-body, wrist, and hand command clip |
 
 Duration is calculated as `(frame_count - 1) / fps`.
+
+`hugwbc_forward_arm_motion.npz` uses the distinct
+`igris_c_hugwbc_command_v1` schema. It is consumed by
+`scripts/hugwbc/igris_c_hugwbc.py`, not by the Student motion-tracking runner.
 
 The two `recorded_*.npz` files do not contain auxiliary wrist or hand targets. During
 their playback, the auxiliary controller therefore holds its configured default wrist
@@ -87,8 +92,7 @@ interpolate between frames. Use a suitable sampling rate when generating a new m
 | 14–16 s | Return the right shoulder and elbow to 0 degrees |
 | 16–18 s | Hold the final standing pose |
 
-Its initial wrist-roll targets are +30 degrees for the left wrist and -30 degrees for
-the right wrist. Finger targets are otherwise initialized to the open position.
+Its wrist targets and finger targets are initialized to zero.
 
 Regenerate the file with the repository's generator:
 

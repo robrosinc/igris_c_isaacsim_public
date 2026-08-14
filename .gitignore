@@ -21,6 +21,9 @@
 # Outputs
 **/runs/*
 **/logs/*
+!logs/rsl_rl/
+!logs/rsl_rl/igris_c_hugwbc/
+!logs/rsl_rl/igris_c_hugwbc/model_16900.pt
 **/recordings/*
 **/output/*
 **/outputs/*
