@@ -1,4 +1,4 @@
-"""Run the IGRIS-C HugWBC policy with random or NPZ commands."""
+"""Run an IGRIS-C HugWBC policy with random or NPZ commands."""
 
 from __future__ import annotations
 
@@ -15,8 +15,10 @@ sys.path.insert(0, str(CURRENT_PACKAGE_ROOT))
 from isaaclab.app import AppLauncher
 
 
-DEFAULT_CHECKPOINT = REPOSITORY_ROOT / "logs/rsl_rl/igris_c_hugwbc/model_16900.pt"
-DEFAULT_TASK = "Robros-IGRIS-C-Flat-Teleop-Lowerbody-Action"
+DEFAULT_CHECKPOINT = (
+    REPOSITORY_ROOT / "logs/rsl_rl/hugwbc_lowerbody_symmetry/model_31900.pt"
+)
+DEFAULT_TASK = "Robros-IGRIS-C-Flat-HugWBC-LowerBody-Symmetry"
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--task", default=DEFAULT_TASK, help="Registered HugWBC task name.")
@@ -46,32 +48,69 @@ from robros_lab.tasks.hug_wbc.controllers import (  # noqa: E402
 )
 from robros_lab.tasks.hug_wbc.config.igris_c.env_cfg import (  # noqa: E402
     LOWER_BODY_JOINTS,
+    LOWER_BODY_SYMMETRY_JOINTS,
 )
 from robros_lab.tasks.motion_tracking.controllers import (  # noqa: E402
+    AUXILIARY_JOINT_NAMES,
     WristHandPoseController,
 )
 
 
 def _validate_runtime_contract(env, policy: HugWBCPolicy, observation: torch.Tensor) -> None:
-    expected_observation_shape = (env.num_envs, 280)
+    expected_observation_shape = (env.num_envs, policy.observation_dim)
     if tuple(observation.shape) != expected_observation_shape:
         raise ValueError(
             f"Expected policy observation {expected_observation_shape}, got {tuple(observation.shape)}."
         )
-    if env.action_manager.total_action_dim != 15 or policy.action_dim != 15:
+    if env.action_manager.total_action_dim != policy.action_dim:
         raise ValueError(
-            "model_16900.pt requires exactly 15 environment and policy actions; "
-            f"got {env.action_manager.total_action_dim} and {policy.action_dim}."
+            f"Checkpoint requires {policy.action_dim} actions, but the environment has "
+            f"{env.action_manager.total_action_dim}."
         )
     if abs(float(env.step_dt) - 0.02) > 1.0e-9:
-        raise ValueError(f"model_16900.pt requires a 0.02 s policy step, got {env.step_dt}.")
+        raise ValueError(f"HugWBC requires a 0.02 s policy step, got {env.step_dt}.")
+
+    if policy.action_dim == 13:
+        expected_action_terms = ("gait_freq", "joint_pos", "teleop")
+        expected_action_term_dims = (1, 12, 0)
+        expected_joint_names = LOWER_BODY_SYMMETRY_JOINTS
+    elif policy.action_dim == 15:
+        expected_action_terms = ("joint_pos", "gait_freq", "teleop")
+        expected_action_term_dims = (14, 1, 0)
+        expected_joint_names = LOWER_BODY_JOINTS
+    else:
+        raise ValueError(f"Unsupported HugWBC action dimension: {policy.action_dim}.")
+    if tuple(env.action_manager.active_terms) != expected_action_terms:
+        raise ValueError(
+            "Action term order does not match the checkpoint. "
+            f"Expected {expected_action_terms}, got {tuple(env.action_manager.active_terms)}."
+        )
+    if tuple(env.action_manager.action_term_dim) != expected_action_term_dims:
+        raise ValueError(
+            "Action term dimensions do not match the checkpoint. "
+            f"Expected {expected_action_term_dims}, got "
+            f"{tuple(env.action_manager.action_term_dim)}."
+        )
     action_term = env.action_manager.get_term("joint_pos")
     resolved_joint_names = tuple(getattr(action_term, "_joint_names", ()))
-    if resolved_joint_names != tuple(LOWER_BODY_JOINTS):
+    if resolved_joint_names != tuple(expected_joint_names):
         raise ValueError(
             "Lower-body action joint order does not match the checkpoint. "
-            f"Expected {tuple(LOWER_BODY_JOINTS)}, got {resolved_joint_names}."
+            f"Expected {tuple(expected_joint_names)}, got {resolved_joint_names}."
         )
+
+
+def _create_wrist_hand_controller(env) -> WristHandPoseController | None:
+    robot = env.scene["robot"]
+    if not set(AUXILIARY_JOINT_NAMES).issubset(robot.joint_names):
+        return None
+    _, resolved_joint_names = robot.find_joints(
+        list(AUXILIARY_JOINT_NAMES),
+        preserve_order=True,
+    )
+    if tuple(resolved_joint_names) != AUXILIARY_JOINT_NAMES:
+        return None
+    return WristHandPoseController(robot)
 
 
 def main() -> None:
@@ -111,7 +150,7 @@ def main() -> None:
         policy_observation = observations["policy"]
         policy = HugWBCPolicy(args_cli.checkpoint, device=unwrapped.device)
         _validate_runtime_contract(unwrapped, policy, policy_observation)
-        wrist_hand_controller = WristHandPoseController(unwrapped.scene["robot"])
+        wrist_hand_controller = _create_wrist_hand_controller(unwrapped)
         if policy_observation.dtype != policy.dtype:
             raise TypeError(
                 f"Environment observation dtype {policy_observation.dtype} does not match "
@@ -121,6 +160,8 @@ def main() -> None:
         print(f"[INFO]: Checkpoint: {policy.checkpoint_path}")
         print(f"[INFO]: Checkpoint iteration: {policy.iteration}")
         print(f"[INFO]: Policy observation/action: {policy.observation_dim}/{policy.action_dim}")
+        if wrist_hand_controller is None:
+            print("[INFO]: Robot variant has fixed wrists/hands; auxiliary targets are ignored")
         if source is None:
             print("[INFO]: Command source: fixed base velocity + random teleoperation")
         else:
@@ -135,7 +176,7 @@ def main() -> None:
             start_time = time.perf_counter()
             with torch.inference_mode():
                 action = policy.infer(policy_observation)
-                if source is not None:
+                if source is not None and wrist_hand_controller is not None:
                     wrist_hand_reference = source.get_wrist_hand_reference()
                     if wrist_hand_reference is not None:
                         wrist_hand_controller.set_target(
@@ -143,7 +184,8 @@ def main() -> None:
                             joint_pos=wrist_hand_reference.joint_pos,
                             joint_vel=wrist_hand_reference.joint_vel,
                         )
-                wrist_hand_controller.apply()
+                if wrist_hand_controller is not None:
+                    wrist_hand_controller.apply()
                 observations, _, _, _, _ = env.step(action)
                 policy_observation = observations["policy"]
             step_count += 1

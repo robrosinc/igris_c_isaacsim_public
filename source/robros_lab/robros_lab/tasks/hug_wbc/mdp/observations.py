@@ -23,8 +23,9 @@ class GaitSignalObservation(ManagerTermBase):
         del asset_cfg
         gait_freq = env.action_manager.get_term("gait_freq").processed_actions.squeeze(-1)
         self.global_gait_phase = torch.frac(self.global_gait_phase + self.dt * gait_freq)
-        velocity_term = env.command_manager.get_term("base_velocity")
-        self.global_gait_phase[velocity_term.is_standing_env] = 0.125
+        velocity_command = env.command_manager.get_command("base_velocity")
+        small_velocity_command = torch.linalg.vector_norm(velocity_command, dim=-1) < 0.1
+        self.global_gait_phase[small_velocity_command] = 0.125
         phase = 2.0 * torch.pi * self.global_gait_phase
         return torch.stack((gait_freq, torch.sin(phase), torch.cos(phase)), dim=-1)
 

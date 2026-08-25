@@ -12,6 +12,9 @@ import torch.nn as nn
 HUGWBC_OBSERVATION_DIM = 280
 HUGWBC_ACTION_DIM = 15
 HUGWBC_HIDDEN_DIMS = (512, 256, 128)
+LOWER_BODY_SYMMETRY_OBSERVATION_DIM = 700
+LOWER_BODY_SYMMETRY_ACTION_DIM = 13
+LOWER_BODY_SYMMETRY_HIDDEN_DIMS = (256, 256, 256)
 
 
 class _EmpiricalNormalization(nn.Module):
@@ -55,30 +58,21 @@ class _HugWBCActor(nn.Module):
 
 
 class HugWBCPolicy:
-    """Strictly load ``model_16900.pt`` and return its deterministic actor mean."""
+    """Strictly load a supported HugWBC actor and return its deterministic mean."""
 
     def __init__(
         self,
         checkpoint_path: str | Path,
         *,
         device: torch.device | str,
-        expected_observation_dim: int = HUGWBC_OBSERVATION_DIM,
-        expected_action_dim: int = HUGWBC_ACTION_DIM,
-        hidden_dims: Sequence[int] = HUGWBC_HIDDEN_DIMS,
+        expected_observation_dim: int | None = None,
+        expected_action_dim: int | None = None,
+        hidden_dims: Sequence[int] | None = None,
     ) -> None:
         self.checkpoint_path = Path(checkpoint_path).expanduser().resolve()
         if not self.checkpoint_path.is_file():
             raise FileNotFoundError(f"HugWBC checkpoint does not exist: {self.checkpoint_path}")
         self.device = torch.device(device)
-        self.expected_observation_dim = int(expected_observation_dim)
-        self.expected_action_dim = int(expected_action_dim)
-        self.hidden_dims = tuple(int(dim) for dim in hidden_dims)
-        if self.expected_observation_dim != HUGWBC_OBSERVATION_DIM:
-            raise ValueError(f"HugWBC requires {HUGWBC_OBSERVATION_DIM} observations.")
-        if self.expected_action_dim != HUGWBC_ACTION_DIM:
-            raise ValueError(f"HugWBC requires {HUGWBC_ACTION_DIM} actions.")
-        if self.hidden_dims != HUGWBC_HIDDEN_DIMS:
-            raise ValueError(f"HugWBC requires hidden dimensions {HUGWBC_HIDDEN_DIMS}.")
 
         checkpoint = torch.load(
             self.checkpoint_path,
@@ -86,6 +80,32 @@ class HugWBCPolicy:
             weights_only=False,
         )
         state_dict = self._extract_actor_state_dict(checkpoint)
+        checkpoint_observation_dim, checkpoint_action_dim, checkpoint_hidden_dims = (
+            self._infer_checkpoint_layout(state_dict)
+        )
+        if (
+            expected_observation_dim is not None
+            and int(expected_observation_dim) != checkpoint_observation_dim
+        ):
+            raise ValueError(
+                f"Checkpoint has {checkpoint_observation_dim} observations, "
+                f"expected {int(expected_observation_dim)}."
+            )
+        if expected_action_dim is not None and int(expected_action_dim) != checkpoint_action_dim:
+            raise ValueError(
+                f"Checkpoint has {checkpoint_action_dim} actions, "
+                f"expected {int(expected_action_dim)}."
+            )
+        if hidden_dims is not None:
+            requested_hidden_dims = tuple(int(dim) for dim in hidden_dims)
+            if requested_hidden_dims != checkpoint_hidden_dims:
+                raise ValueError(
+                    f"Checkpoint hidden dimensions are {checkpoint_hidden_dims}, "
+                    f"expected {requested_hidden_dims}."
+                )
+        self.expected_observation_dim = checkpoint_observation_dim
+        self.expected_action_dim = checkpoint_action_dim
+        self.hidden_dims = checkpoint_hidden_dims
         self._validate_checkpoint_layout(state_dict)
         checkpoint_dtype = state_dict["mlp.0.weight"].dtype
         model = _HugWBCActor(
@@ -145,6 +165,22 @@ class HugWBCPolicy:
             raise TypeError("actor_state_dict must map string names to torch.Tensor values.")
         return state_dict
 
+    @staticmethod
+    def _infer_checkpoint_layout(
+        state_dict: dict[str, torch.Tensor],
+    ) -> tuple[int, int, tuple[int, ...]]:
+        weight_names = ("mlp.0.weight", "mlp.2.weight", "mlp.4.weight", "mlp.6.weight")
+        missing = [name for name in weight_names if name not in state_dict]
+        if missing:
+            raise KeyError(f"HugWBC actor is missing MLP weights: {missing}.")
+        weights = [state_dict[name] for name in weight_names]
+        if any(weight.ndim != 2 for weight in weights):
+            raise ValueError("HugWBC MLP weights must all be rank-two tensors.")
+        observation_dim = int(weights[0].shape[1])
+        hidden_dims = tuple(int(weight.shape[0]) for weight in weights[:-1])
+        action_dim = int(weights[-1].shape[0])
+        return observation_dim, action_dim, hidden_dims
+
     def _validate_checkpoint_layout(self, state_dict: dict[str, torch.Tensor]) -> None:
         dims = self.hidden_dims
         expected_shapes = {
@@ -182,5 +218,8 @@ __all__ = [
     "HUGWBC_ACTION_DIM",
     "HUGWBC_HIDDEN_DIMS",
     "HUGWBC_OBSERVATION_DIM",
+    "LOWER_BODY_SYMMETRY_ACTION_DIM",
+    "LOWER_BODY_SYMMETRY_HIDDEN_DIMS",
+    "LOWER_BODY_SYMMETRY_OBSERVATION_DIM",
     "HugWBCPolicy",
 ]
