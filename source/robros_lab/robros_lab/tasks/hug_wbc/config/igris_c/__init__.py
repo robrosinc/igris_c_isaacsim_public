@@ -11,3 +11,14 @@ gym.register(
         "env_cfg_entry_point": f"{__name__}.env_cfg:IGRISCHugWBCFlatEnvCfg",
     },
 )
+
+gym.register(
+    id="Robros-IGRIS-C-Flat-HugWBC-LowerBody-Symmetry",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": (
+            f"{__name__}.env_cfg:IGRISCHugWBCLowerBodySymmetryEnvCfg"
+        ),
+    },
+)

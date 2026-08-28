@@ -14,6 +14,7 @@ from isaaclab.managers import TerminationTermCfg as DoneTerm
 from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.terrains import TerrainImporterCfg
 from isaaclab.utils import configclass
+from isaaclab.utils.noise import AdditiveGaussianNoiseCfg
 
 from robros_lab.assets import IGRIS_C_WRIST_HAND_INDEPENDENT_CFG
 from robros_lab.tasks.hug_wbc import mdp as hugwbc_mdp
@@ -22,6 +23,45 @@ from robros_lab.tasks.hug_wbc import mdp as hugwbc_mdp
 LOWER_BODY_JOINTS = [
     "Joint_Waist_Roll",
     "Joint_Waist_Pitch",
+    "Joint_Hip_Pitch_Left",
+    "Joint_Hip_Pitch_Right",
+    "Joint_Hip_Roll_Left",
+    "Joint_Hip_Roll_Right",
+    "Joint_Hip_Yaw_Left",
+    "Joint_Hip_Yaw_Right",
+    "Joint_Knee_Pitch_Left",
+    "Joint_Knee_Pitch_Right",
+    "Joint_Ankle_Pitch_Left",
+    "Joint_Ankle_Pitch_Right",
+    "Joint_Ankle_Roll_Left",
+    "Joint_Ankle_Roll_Right",
+]
+LOWER_BODY_SYMMETRY_JOINTS = [
+    "Joint_Hip_Pitch_Left",
+    "Joint_Hip_Pitch_Right",
+    "Joint_Hip_Roll_Left",
+    "Joint_Hip_Roll_Right",
+    "Joint_Hip_Yaw_Left",
+    "Joint_Hip_Yaw_Right",
+    "Joint_Knee_Pitch_Left",
+    "Joint_Knee_Pitch_Right",
+    "Joint_Ankle_Pitch_Left",
+    "Joint_Ankle_Pitch_Right",
+    "Joint_Ankle_Roll_Left",
+    "Joint_Ankle_Roll_Right",
+]
+LOWER_BODY_SYMMETRY_STATE_JOINTS = [
+    "Joint_Shoulder_Pitch_Left",
+    "Joint_Shoulder_Pitch_Right",
+    "Joint_Waist_Yaw",
+    "Joint_Shoulder_Roll_Left",
+    "Joint_Shoulder_Roll_Right",
+    "Joint_Waist_Roll",
+    "Joint_Shoulder_Yaw_Left",
+    "Joint_Shoulder_Yaw_Right",
+    "Joint_Waist_Pitch",
+    "Joint_Elbow_Pitch_Left",
+    "Joint_Elbow_Pitch_Right",
     "Joint_Hip_Pitch_Left",
     "Joint_Hip_Pitch_Right",
     "Joint_Hip_Roll_Left",
@@ -110,6 +150,36 @@ class HugWBCSceneCfg(InteractiveSceneCfg):
 
 
 @configclass
+class LowerBodySymmetrySceneCfg(HugWBCSceneCfg):
+    """Scene used by the lower-body symmetry checkpoint."""
+
+    terrain = TerrainImporterCfg(
+        prim_path="/World/ground",
+        terrain_type="plane",
+        collision_group=-1,
+        physics_material=sim_utils.RigidBodyMaterialCfg(
+            friction_combine_mode="multiply",
+            restitution_combine_mode="multiply",
+            static_friction=1.0,
+            dynamic_friction=1.0,
+            restitution=0.0,
+        ),
+        debug_vis=False,
+    )
+    robot: ArticulationCfg = IGRIS_C_WRIST_HAND_INDEPENDENT_CFG.replace(
+        prim_path="{ENV_REGEX_NS}/Robot",
+        soft_joint_pos_limit_factor=0.97,
+        init_state=IGRIS_C_WRIST_HAND_INDEPENDENT_CFG.init_state.replace(
+            pos=(0.0, 0.0, 0.98),
+            joint_pos={
+                **IGRIS_C_WRIST_HAND_INDEPENDENT_CFG.init_state.joint_pos,
+                ".*_Ankle_Pitch_.*": -0.15,
+            },
+        ),
+    )
+
+
+@configclass
 class CommandsCfg:
     base_velocity = hugwbc_mdp.HugWBCBaseVelocityCommandCfg(
         command=(0.0, 0.0, 0.0),
@@ -136,6 +206,29 @@ class ActionsCfg:
         use_default_offset=False,
     )
     gait_freq = hugwbc_mdp.GaitFreqActionCfg(asset_name="robot", lpf_alpha=0.3)
+    teleop = hugwbc_mdp.CommandJointPositionActionCfg(
+        asset_name="robot",
+        joint_names=TELEOPERATION_TRACKED_JOINTS,
+        command_name="teleoperation_command",
+    )
+
+
+@configclass
+class LowerBodySymmetryActionsCfg:
+    """Thirteen-action layout used by ``model_59400.pt``."""
+
+    gait_freq = hugwbc_mdp.GaitFreqActionCfg(
+        asset_name="robot",
+        lpf_alpha=0.3,
+        reset_processed_action=0.0,
+    )
+    joint_pos = mdp.JointPositionActionCfg(
+        asset_name="robot",
+        joint_names=LOWER_BODY_SYMMETRY_JOINTS,
+        scale=0.25,
+        preserve_order=True,
+        use_default_offset=True,
+    )
     teleop = hugwbc_mdp.CommandJointPositionActionCfg(
         asset_name="robot",
         joint_names=TELEOPERATION_TRACKED_JOINTS,
@@ -186,6 +279,64 @@ class ObservationsCfg:
             self.enable_corruption = False
             self.concatenate_terms = True
             self.history_length = 5
+            self.flatten_history_dim = True
+
+    policy: PolicyCfg = PolicyCfg()
+
+
+@configclass
+class LowerBodySymmetryObservationsCfg:
+    """Actor observations from the source ``WalkingRobotPlayEnvCfg``."""
+
+    @configclass
+    class PolicyCfg(ObsGroup):
+        gait_signal = ObsTerm(
+            func=hugwbc_mdp.GaitSignalObservation,
+            params={"asset_cfg": SceneEntityCfg("robot")},
+        )
+        velocity_commands = ObsTerm(
+            func=mdp.generated_commands,
+            params={"command_name": "base_velocity"},
+        )
+        base_ang_vel = ObsTerm(
+            func=mdp.base_ang_vel,
+            noise=AdditiveGaussianNoiseCfg(std=0.05),
+        )
+        projected_gravity = ObsTerm(
+            func=mdp.projected_gravity,
+            noise=AdditiveGaussianNoiseCfg(std=0.02),
+        )
+        joint_pos = ObsTerm(
+            func=mdp.joint_pos_rel,
+            params={
+                "asset_cfg": SceneEntityCfg(
+                    "robot",
+                    joint_names=LOWER_BODY_SYMMETRY_STATE_JOINTS,
+                    preserve_order=True,
+                )
+            },
+            noise=AdditiveGaussianNoiseCfg(std=0.02),
+        )
+        joint_vel = ObsTerm(
+            func=mdp.joint_vel,
+            params={
+                "asset_cfg": SceneEntityCfg(
+                    "robot",
+                    joint_names=LOWER_BODY_SYMMETRY_STATE_JOINTS,
+                    preserve_order=True,
+                )
+            },
+            noise=AdditiveGaussianNoiseCfg(std=0.4),
+        )
+        last_action = ObsTerm(
+            func=mdp.last_action,
+            params={"action_name": "joint_pos"},
+        )
+
+        def __post_init__(self) -> None:
+            self.enable_corruption = False
+            self.concatenate_terms = True
+            self.history_length = 10
             self.flatten_history_dim = True
 
     policy: PolicyCfg = PolicyCfg()
@@ -261,9 +412,32 @@ class IGRISCHugWBCFlatEnvCfg(ManagerBasedRLEnvCfg):
         self.viewer.lookat = (0.0, 0.0, 0.8)
 
 
+@configclass
+class IGRISCHugWBCLowerBodySymmetryEnvCfg(IGRISCHugWBCFlatEnvCfg):
+    """Playback port of ``WalkingRobotPlayEnvCfg`` for ``model_59400.pt``."""
+
+    scene: LowerBodySymmetrySceneCfg = LowerBodySymmetrySceneCfg(
+        num_envs=1,
+        env_spacing=2.5,
+        replicate_physics=True,
+    )
+    observations: LowerBodySymmetryObservationsCfg = LowerBodySymmetryObservationsCfg()
+    actions: LowerBodySymmetryActionsCfg = LowerBodySymmetryActionsCfg()
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        self.sim.dt = 1.0 / 250.0
+        self.decimation = 5
+        self.sim.render_interval = self.decimation
+        self.sim.physics_material = self.scene.terrain.physics_material
+
+
 __all__ = [
     "IGRISCHugWBCFlatEnvCfg",
+    "IGRISCHugWBCLowerBodySymmetryEnvCfg",
     "LOWER_BODY_JOINTS",
+    "LOWER_BODY_SYMMETRY_JOINTS",
+    "LOWER_BODY_SYMMETRY_STATE_JOINTS",
     "TELEOPERATION_JOINTS",
     "TELEOPERATION_RANGES",
 ]
