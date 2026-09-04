@@ -206,7 +206,7 @@ IGRIS_C_WRIST_HAND_INDEPENDENT_CFG = ArticulationCfg(
             ".*_Hip_Roll_.*": 0.0,
             ".*_Hip_Yaw_.*": 0.0,
             ".*_Knee_Pitch_.*": 0.3,
-            ".*_Ankle_Pitch_.*": -0.1,
+            ".*_Ankle_Pitch_.*": -0.15,
             ".*_Ankle_Roll_.*": 0.0,
             ".*_Waist_.*": 0.0,
             ".*_Shoulder_Pitch_Left": 0.13,
