@@ -16,7 +16,7 @@ from isaaclab.app import AppLauncher
 
 
 DEFAULT_CHECKPOINT = (
-    REPOSITORY_ROOT / "logs/rsl_rl/hugwbc_lowerbody_symmetry/model_31900.pt"
+    REPOSITORY_ROOT / "logs/rsl_rl/hugwbc_lowerbody_symmetry/model.pt"
 )
 DEFAULT_TASK = "Robros-IGRIS-C-Flat-HugWBC-LowerBody-Symmetry"
 
