@@ -16,8 +16,8 @@ CAMERA_PRIM_PATHS = {
     "head_depth_camera": "Link_Neck_Pitch/d435_depth_camera",
     "right_rgb_camera": "Link_Neck_Pitch/RightRgbCamera",
     "left_rgb_camera": "Link_Neck_Pitch/LeftRgbCamera",
-    "left_wrist_camera": "Link_Wrist_Pitch_Left/left_wrist_camera",
-    "right_wrist_camera": "Link_Wrist_Pitch_Right/right_wrist_camera",
+    "left_wrist_camera": "Left_Hand/l_hand_camera_link",
+    "right_wrist_camera": "Right_Hand/r_hand_camera_link",
 }
 LENS_DISTORTION_EXTENSION = "omni.usd.schema.omni_lens_distortion"
 
