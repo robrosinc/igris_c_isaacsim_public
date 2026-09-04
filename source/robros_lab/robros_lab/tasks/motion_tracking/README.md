@@ -20,7 +20,7 @@ See the repository [README](../../../../../README.md) for installation and execu
 | Default reference | Captured standing pose |
 | Optional reference | Offline NPZ replay |
 
-The scene contains the robot, three robot-mounted cameras, a ground plane, and a dome light. It does not create a table, box, or external environment USD.
+The scene contains the robot, six robot-mounted cameras, a ground plane, and a dome light. The calibrated head RGB/depth pair and wrist cameras mirror the H1 task settings; the two head-mounted side RGB cameras remain available. The scene does not create a table, box, or external environment USD.
 
 ## Layout
 
@@ -29,6 +29,7 @@ motion_tracking/
 ├── README.md
 ├── __init__.py
 ├── action_adapter.py
+├── camera_cfg.py
 ├── env_cfg.py
 ├── observations.py
 ├── robot_cfg.py
@@ -52,7 +53,8 @@ motion_tracking/
 | `__init__.py` | Registers the Gym task |
 | `env_cfg.py` | Composes scene, action, observation, command, reward, and termination configs |
 | `scene_cfg.py` | Adds ground and lighting to the reusable robot scene |
-| `robot_cfg.py` | Selects the wrist/hand robot and defines the three mounted cameras |
+| `camera_cfg.py` | Applies the H1 OpenCV pinhole intrinsic and distortion model |
+| `robot_cfg.py` | Selects the wrist/hand robot and defines the six mounted cameras |
 | `student_contract.py` | Defines the immutable 23-joint checkpoint order |
 | `observations.py` | Defines and validates the 1,601-element Student observation |
 | `action_adapter.py` | Validates the 23 actions and applies the safe joint-position action config |

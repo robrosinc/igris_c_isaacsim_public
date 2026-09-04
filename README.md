@@ -259,7 +259,7 @@ through the HugWBC runner:
 | `--max_steps N` | Stop after a fixed number of policy steps |
 | `--real_time` | Sleep when simulation runs faster than the 50 Hz policy period |
 | `--headless` | Run without the graphical window |
-| `--viewport_camera CAMERA` | Select `viewer`, `head_camera`, `right_rgb_camera`, or `left_rgb_camera` |
+| `--viewport_camera CAMERA` | Select `viewer`, `head_camera`, `head_depth_camera`, `right_rgb_camera`, `left_rgb_camera`, `left_wrist_camera`, or `right_wrist_camera` |
 | `--disable_fabric` | Disable Fabric and use USD I/O operations |
 
 `--loop` and `--stop_at_end` cannot be used together.

@@ -11,11 +11,15 @@ from isaaclab.app import AppLauncher
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CHECKPOINT = REPOSITORY_ROOT / "logs/rsl_rl/igris_c_tracking/student_108.pt"
-CAMERA_PRIM_NAMES = {
-    "head_camera": "HeadCamera",
-    "right_rgb_camera": "RightRgbCamera",
-    "left_rgb_camera": "LeftRgbCamera",
+CAMERA_PRIM_PATHS = {
+    "head_camera": "Link_Neck_Pitch/d435_camera",
+    "head_depth_camera": "Link_Neck_Pitch/d435_depth_camera",
+    "right_rgb_camera": "Link_Neck_Pitch/RightRgbCamera",
+    "left_rgb_camera": "Link_Neck_Pitch/LeftRgbCamera",
+    "left_wrist_camera": "Link_Wrist_Pitch_Left/left_wrist_camera",
+    "right_wrist_camera": "Link_Wrist_Pitch_Right/right_wrist_camera",
 }
+LENS_DISTORTION_EXTENSION = "omni.usd.schema.omni_lens_distortion"
 
 
 parser = argparse.ArgumentParser(description="Run a fixed initial pose or replay an optional motion NPZ.")
@@ -67,13 +71,16 @@ parser.add_argument(
 )
 parser.add_argument(
     "--viewport_camera",
-    choices=("viewer", *CAMERA_PRIM_NAMES),
+    choices=("viewer", *CAMERA_PRIM_PATHS),
     default="viewer",
     help="GUI viewport source.",
 )
 AppLauncher.add_app_launcher_args(parser)
 args_cli = parser.parse_args()
 args_cli.enable_cameras = True
+kit_args = args_cli.kit_args or ""
+if f"--enable {LENS_DISTORTION_EXTENSION}" not in kit_args:
+    args_cli.kit_args = f"{kit_args} --enable {LENS_DISTORTION_EXTENSION}".strip()
 
 app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
@@ -126,9 +133,7 @@ def _configure_viewport(env) -> None:
     viewport = get_active_viewport()
     if viewport is None:
         raise RuntimeError("Could not resolve the active Isaac Sim GUI viewport.")
-    camera_prim_path = (
-        f"/World/envs/env_0/Robot/Link_Neck_Pitch/{CAMERA_PRIM_NAMES[camera_name]}"
-    )
+    camera_prim_path = f"/World/envs/env_0/Robot/{CAMERA_PRIM_PATHS[camera_name]}"
     viewport.set_active_camera(camera_prim_path)
     print(f"[INFO]: Active GUI viewport camera: {camera_prim_path}", flush=True)
 
