@@ -229,9 +229,8 @@ IGRIS_C_LEFT_RGB_CAMERA_CFG = CameraCfg(
 )
 
 IGRIS_C_LEFT_WRIST_CAMERA_CFG = CameraCfg(
-    # H1's Left_Hand frame is coincident with its wrist-pitch frame. The public
-    # hand URDF adds a fixed hand transform, so attach to the common wrist frame.
-    prim_path="{ENV_REGEX_NS}/Robot/Link_Wrist_Pitch_Left/left_wrist_camera",
+    # URDF l_palm is represented by the public asset's Left_Hand link.
+    prim_path="{ENV_REGEX_NS}/Robot/Left_Hand/l_hand_camera_link",
     height=200,
     width=320,
     data_types=["rgb"],
@@ -243,16 +242,16 @@ IGRIS_C_LEFT_WRIST_CAMERA_CFG = CameraCfg(
         clipping_range=(0.001, 4.0),
     ),
     offset=CameraCfg.OffsetCfg(
-        pos=(-0.000267322741459, 0.00415895499953, -0.129840975238),
-        rot=(0.699215363677, 0.714806849091, 0.0114143028865, 0.00433097922337),
-        convention="ros",
+        pos=(-0.024420, 0.010317, 0.034793),
+        # URDF camera_link rpy=(-2.7823, -0.5795, 0.9576), converted to (w, x, y, z).
+        rot=(0.281491451510162, -0.813343087073706, -0.479715245579771, -0.170613213422809),
+        convention="world",
     ),
 )
 
 IGRIS_C_RIGHT_WRIST_CAMERA_CFG = CameraCfg(
-    # H1's Right_Hand frame is coincident with its wrist-pitch frame. The public
-    # hand URDF adds a fixed hand transform, so attach to the common wrist frame.
-    prim_path="{ENV_REGEX_NS}/Robot/Link_Wrist_Pitch_Right/right_wrist_camera",
+    # URDF r_palm is represented by the public asset's Right_Hand link.
+    prim_path="{ENV_REGEX_NS}/Robot/Right_Hand/r_hand_camera_link",
     height=200,
     width=320,
     data_types=["rgb"],
@@ -264,9 +263,10 @@ IGRIS_C_RIGHT_WRIST_CAMERA_CFG = CameraCfg(
         clipping_range=(0.001, 4.0),
     ),
     offset=CameraCfg.OffsetCfg(
-        pos=(0.000267322741459, -0.00415895499953, -0.129840975238),
-        rot=(-0.000770306955654, -0.00879481673276, 0.715300349799, 0.698761380876),
-        convention="ros",
+        pos=(-0.024420, -0.010317, 0.034793),
+        # URDF camera_link rpy=(2.7845, -0.5769, -0.9588), converted to (w, x, y, z).
+        rot=(0.280192038750642, 0.813790055664715, -0.479987262874607, 0.169854037927043),
+        convention="world",
     ),
 )
 
