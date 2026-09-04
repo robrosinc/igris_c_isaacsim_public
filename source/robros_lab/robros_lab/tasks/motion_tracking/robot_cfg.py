@@ -14,35 +14,6 @@ from .camera_cfg import calibrated_pinhole_camera_cfg
 IGRIS_C_ROBOT_CFG = IGRIS_C_WRIST_HAND_INDEPENDENT_CFG.replace(
   prim_path="{ENV_REGEX_NS}/Robot"
 )
-_SPAWN_IGRIS_C_ROBOT = IGRIS_C_ROBOT_CFG.spawn.func
-
-
-def _spawn_igris_c_without_head_visual(
-    prim_path: str,
-    cfg: sim_utils.UsdFileCfg,
-    translation: tuple[float, float, float] | None = None,
-    orientation: tuple[float, float, float, float] | None = None,
-    **kwargs,
-):
-    """Spawn IGRIS-C and hide the neck-pitch visual, matching the H1 simulation asset."""
-
-    robot_prim = _SPAWN_IGRIS_C_ROBOT(
-        prim_path,
-        cfg,
-        translation=translation,
-        orientation=orientation,
-        **kwargs,
-    )
-    head_visual_paths = sim_utils.find_matching_prim_paths(f"{prim_path}/Link_Neck_Pitch/visuals")
-    if not head_visual_paths:
-        raise RuntimeError(f"Could not find the Link_Neck_Pitch visual under '{prim_path}'.")
-    stage = sim_utils.get_current_stage()
-    for visual_path in head_visual_paths:
-        sim_utils.set_prim_visibility(stage.GetPrimAtPath(visual_path), visible=False)
-    return robot_prim
-
-
-IGRIS_C_ROBOT_CFG.spawn.func = _spawn_igris_c_without_head_visual
 
 HEAD_RGB_CAMERA_POS = (0.111295551, 0.034652642, 0.165355680)
 HEAD_RGB_CAMERA_ROT = (0.229563798, -0.674830130, 0.671676295, -0.201880443)
@@ -86,6 +57,11 @@ RIGHT_WRIST_INTRINSIC = (
     (0.0, 0.0, 1.0),
 )
 RIGHT_WRIST_DISTORTION = (0.044201, -0.057607, -0.000818, 0.000326, 0.012698)
+
+# Both D435 optical centers are inside the neck-pitch render mesh. A 60 mm
+# near plane clears that mesh only from the D435 render products while keeping
+# the face visible to the eye cameras and the GUI viewport.
+HEAD_CAMERA_CLIPPING_RANGE = (0.06, 4.0)
 
 
 def _quat_from_axis_angle(axis: tuple[float, float, float], angle_degrees: float) -> tuple[float, float, float, float]:
@@ -185,7 +161,7 @@ IGRIS_C_HEAD_CAMERA_CFG = CameraCfg(
         distortion=HEAD_RGB_DISTORTION,
         width=640,
         height=480,
-        clipping_range=(0.01, 4.0),
+        clipping_range=HEAD_CAMERA_CLIPPING_RANGE,
     ),
     offset=CameraCfg.OffsetCfg(
         pos=HEAD_RGB_CAMERA_POS,
@@ -204,7 +180,7 @@ IGRIS_C_HEAD_DEPTH_CAMERA_CFG = CameraCfg(
         distortion=HEAD_DEPTH_DISTORTION,
         width=640,
         height=480,
-        clipping_range=(0.01, 4.0),
+        clipping_range=HEAD_CAMERA_CLIPPING_RANGE,
     ),
     offset=CameraCfg.OffsetCfg(
         pos=HEAD_DEPTH_CAMERA_POS,
