@@ -21,7 +21,7 @@ actions, and NPZ schemas are independent:
 | Runtime | Checkpoint | Observation | Action | Reference input |
 | --- | --- | ---: | ---: | --- |
 | Student motion tracking | `logs/rsl_rl/igris_c_tracking/student_108.pt` | 1,601 | 23 joint-position actions | Full-body motion-reference NPZ |
-| HugWBC lower-body symmetry | `logs/rsl_rl/hugwbc_lowerbody_symmetry/model_59400.pt` | 700 | 1 gait-frequency + 12 leg joint-position actions | Base-velocity and upper-body command NPZ |
+| HugWBC lower-body symmetry | `logs/rsl_rl/hugwbc_lowerbody_symmetry/model.pt` | 700 | 1 gait-frequency + 12 leg joint-position actions | Base-velocity and upper-body command NPZ |
 | HugWBC waist-controlled | `logs/rsl_rl/igris_c_hugwbc/model_16900.pt` | 280 | 14 lower-body joint-position actions + 1 gait-frequency action | Base-velocity and upper-body command NPZ |
 
 Do not load a HugWBC checkpoint or command NPZ through the Student runner, or a
@@ -68,7 +68,7 @@ igris_c_isaacsim_public/
 ├── logs/rsl_rl/
 │   ├── igris_c_tracking/student_108.pt
 │   ├── igris_c_hugwbc/model_16900.pt
-│   └── hugwbc_lowerbody_symmetry/model_31900.pt
+│   └── hugwbc_lowerbody_symmetry/model.pt
 ├── motion/
 │   ├── recorded_arms.npz
 │   ├── recorded_walk_2.npz
