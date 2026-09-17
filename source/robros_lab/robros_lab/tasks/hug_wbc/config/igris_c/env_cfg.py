@@ -123,6 +123,46 @@ TELEOPERATION_RANGES = {
     "Joint_Elbow_Pitch_Right": (-2.1, 0.0),
 }
 
+LOWER_BODY_SYMMETRY_ACTUATORS = {
+    **IGRIS_C_WRIST_HAND_INDEPENDENT_CFG.actuators,
+    "X12-150": IGRIS_C_WRIST_HAND_INDEPENDENT_CFG.actuators["X12-150"].replace(
+        stiffness={".*Hip_Pitch.*": 143.3, ".*Knee.*": 143.3},
+        damping={".*Hip_Pitch.*": 8.36, ".*Knee.*": 8.36},
+    ),
+    "X8-120": IGRIS_C_WRIST_HAND_INDEPENDENT_CFG.actuators["X8-120"].replace(
+        stiffness=138.96,
+        damping=7.33,
+    ),
+    "X6-60": IGRIS_C_WRIST_HAND_INDEPENDENT_CFG.actuators["X6-60"].replace(
+        stiffness={
+            ".*Hip_Yaw.*": 48.0,
+            ".*Waist_Yaw.*": 121.514570,
+            ".*_Shoulder_.*": 121.514570,
+            ".*_Elbow_.*": 121.514570,
+        },
+        damping={
+            ".*Hip_Yaw.*": 2.54,
+            ".*Waist_Yaw.*": 6.077864,
+            ".*_Shoulder_.*": 6.077864,
+            ".*_Elbow_.*": 6.077864,
+        },
+    ),
+    "PLA": IGRIS_C_WRIST_HAND_INDEPENDENT_CFG.actuators["PLA"].replace(
+        stiffness={
+            ".*Waist_Roll.*": 660.634418,
+            ".*Waist_Pitch.*": 230.579719,
+            ".*Ankle_Pitch.*": 176.56,
+            ".*Ankle_Roll.*": 146.78,
+        },
+        damping={
+            ".*Waist_Roll.*": 34.67,
+            ".*Waist_Pitch.*": 12.10,
+            ".*Ankle_Pitch.*": 10.30,
+            ".*Ankle_Roll.*": 8.56,
+        },
+    ),
+}
+
 
 @configclass
 class HugWBCSceneCfg(InteractiveSceneCfg):
@@ -151,7 +191,6 @@ class HugWBCSceneCfg(InteractiveSceneCfg):
 
 @configclass
 class LowerBodySymmetrySceneCfg(HugWBCSceneCfg):
-    """Scene used by the lower-body symmetry checkpoint."""
 
     terrain = TerrainImporterCfg(
         prim_path="/World/ground",
@@ -168,6 +207,7 @@ class LowerBodySymmetrySceneCfg(HugWBCSceneCfg):
     )
     robot: ArticulationCfg = IGRIS_C_WRIST_HAND_INDEPENDENT_CFG.replace(
         prim_path="{ENV_REGEX_NS}/Robot",
+        actuators=LOWER_BODY_SYMMETRY_ACTUATORS,
         soft_joint_pos_limit_factor=0.97,
         init_state=IGRIS_C_WRIST_HAND_INDEPENDENT_CFG.init_state.replace(
             pos=(0.0, 0.0, 0.98),
@@ -215,7 +255,6 @@ class ActionsCfg:
 
 @configclass
 class LowerBodySymmetryActionsCfg:
-    """Thirteen-action layout used by ``model_59400.pt``."""
 
     gait_freq = hugwbc_mdp.GaitFreqActionCfg(
         asset_name="robot",
@@ -286,7 +325,6 @@ class ObservationsCfg:
 
 @configclass
 class LowerBodySymmetryObservationsCfg:
-    """Actor observations from the source ``WalkingRobotPlayEnvCfg``."""
 
     @configclass
     class PolicyCfg(ObsGroup):
@@ -414,7 +452,7 @@ class IGRISCHugWBCFlatEnvCfg(ManagerBasedRLEnvCfg):
 
 @configclass
 class IGRISCHugWBCLowerBodySymmetryEnvCfg(IGRISCHugWBCFlatEnvCfg):
-    """Playback port of ``WalkingRobotPlayEnvCfg`` for ``model_59400.pt``."""
+    """Playback port of ``WalkingRobotPlayEnvCfg`` for ``model.pt``."""
 
     scene: LowerBodySymmetrySceneCfg = LowerBodySymmetrySceneCfg(
         num_envs=1,
