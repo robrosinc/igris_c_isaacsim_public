@@ -15,35 +15,22 @@ IGRIS_C_ROBOT_CFG = IGRIS_C_WRIST_HAND_INDEPENDENT_CFG.replace(
   prim_path="{ENV_REGEX_NS}/Robot"
 )
 
-HEAD_RGB_CAMERA_POS = (0.111295551, 0.034652642, 0.165355680)
-HEAD_RGB_CAMERA_ROT = (0.229563798, -0.674830130, 0.671676295, -0.201880443)
-HEAD_RGB_TO_DEPTH_POS = (-0.014685470778083286, 0.0003668845572944308, -0.0002340585078071427)
-HEAD_RGB_TO_DEPTH_ROT = (0.9999799842648904, -0.0004686728602067, -0.0016442685933542, 0.0060916168734206)
+HEAD_RGB_CAMERA_POS = (0.112677, 0.0325, 0.159748)
+HEAD_LEFT_IR_CAMERA_POS = (0.112677, 0.0175, 0.159748)
+HEAD_RIGHT_IR_CAMERA_POS = (0.112677, -0.0325, 0.159748)
 
 HEAD_RGB_INTRINSIC = (
-    (602.2489649456799, 0.0, 319.55365209726017),
-    (0.0, 601.5595194939405, 237.2499324251401),
+    (597.0, 0.0, 320.0),
+    (0.0, 597.0, 240.0),
     (0.0, 0.0, 1.0),
 )
-HEAD_RGB_DISTORTION = (
-    0.10335624665662596,
-    -0.08003090389475187,
-    0.0005443642820743403,
-    0.0011010907306839444,
-    -0.44996319866742235,
-)
+HEAD_RGB_DISTORTION = (0.0, 0.0, 0.0, 0.0, 0.0)
 HEAD_DEPTH_INTRINSIC = (
-    (387.26192055231036, 0.0, 324.67217967864474),
-    (0.0, 387.260573425404, 233.78868310827266),
+    (386.0, 0.0, 320.0),
+    (0.0, 386.0, 240.0),
     (0.0, 0.0, 1.0),
 )
-HEAD_DEPTH_DISTORTION = (
-    0.0057938321877094474,
-    -0.01100853164565892,
-    -0.0006863295006149436,
-    -0.000711123750070492,
-    0.006960487411602116,
-)
+HEAD_DEPTH_DISTORTION = (0.0, 0.0, 0.0, 0.0, 0.0)
 
 LEFT_WRIST_INTRINSIC = (
     (115.669608, 0.0, 159.669481),
@@ -92,45 +79,6 @@ def _quat_multiply(
     )
 
 
-def _normalize_quaternion(quat: tuple[float, float, float, float]) -> tuple[float, float, float, float]:
-    norm = math.sqrt(sum(component * component for component in quat))
-    if norm == 0.0:
-        raise ValueError("Quaternion norm must be non-zero.")
-    return tuple(component / norm for component in quat)
-
-
-def _rotate_vector(
-    quat: tuple[float, float, float, float],
-    vector: tuple[float, float, float],
-) -> tuple[float, float, float]:
-    quat = _normalize_quaternion(quat)
-    conjugate = (quat[0], -quat[1], -quat[2], -quat[3])
-    rotated = _quat_multiply(_quat_multiply(quat, (0.0, *vector)), conjugate)
-    return rotated[1], rotated[2], rotated[3]
-
-
-def _compose_pose(
-    parent_pos: tuple[float, float, float],
-    parent_rot: tuple[float, float, float, float],
-    child_pos: tuple[float, float, float],
-    child_rot: tuple[float, float, float, float],
-) -> tuple[tuple[float, float, float], tuple[float, float, float, float]]:
-    rotated_child_pos = _rotate_vector(parent_rot, child_pos)
-    pos = tuple(parent + child for parent, child in zip(parent_pos, rotated_child_pos))
-    rot = _normalize_quaternion(_quat_multiply(parent_rot, child_rot))
-    return pos, rot
-
-
-def _invert_pose(
-    pos: tuple[float, float, float],
-    rot: tuple[float, float, float, float],
-) -> tuple[tuple[float, float, float], tuple[float, float, float, float]]:
-    rot = _normalize_quaternion(rot)
-    inverse_rot = (rot[0], -rot[1], -rot[2], -rot[3])
-    rotated_pos = _rotate_vector(inverse_rot, pos)
-    return tuple(-component for component in rotated_pos), inverse_rot
-
-
 def _camera_rotation(axis: tuple[float, float, float], angle_degrees: float) -> tuple[float, float, float, float]:
     """Apply a Link_Neck_Pitch-axis installation rotation to the base camera rotation."""
 
@@ -139,16 +87,7 @@ def _camera_rotation(axis: tuple[float, float, float], angle_degrees: float) -> 
     return _quat_multiply(installation_rotation, base_rotation)
 
 
-HEAD_DEPTH_TO_RGB_POS, HEAD_DEPTH_TO_RGB_ROT = _invert_pose(
-    HEAD_RGB_TO_DEPTH_POS,
-    HEAD_RGB_TO_DEPTH_ROT,
-)
-HEAD_DEPTH_CAMERA_POS, HEAD_DEPTH_CAMERA_ROT = _compose_pose(
-    HEAD_RGB_CAMERA_POS,
-    HEAD_RGB_CAMERA_ROT,
-    HEAD_DEPTH_TO_RGB_POS,
-    HEAD_DEPTH_TO_RGB_ROT,
-)
+HEAD_RGB_CAMERA_ROT = _camera_rotation((0.0, 1.0, 0.0), 54.0)
 
 
 IGRIS_C_HEAD_CAMERA_CFG = CameraCfg(
@@ -183,11 +122,31 @@ IGRIS_C_HEAD_DEPTH_CAMERA_CFG = CameraCfg(
         clipping_range=HEAD_CAMERA_CLIPPING_RANGE,
     ),
     offset=CameraCfg.OffsetCfg(
-        pos=HEAD_DEPTH_CAMERA_POS,
-        rot=HEAD_DEPTH_CAMERA_ROT,
+        pos=HEAD_LEFT_IR_CAMERA_POS,
+        rot=HEAD_RGB_CAMERA_ROT,
         convention="ros",
     ),
     depth_clipping_behavior="max",
+)
+
+IGRIS_C_HEAD_RIGHT_IR_CAMERA_CFG = CameraCfg(
+    prim_path="{ENV_REGEX_NS}/Robot/Link_Neck_Pitch/d435_right_ir_camera",
+    height=480,
+    width=640,
+    # Isaac Lab renders visible RGB here as a proxy for the right IR viewpoint.
+    data_types=["rgb"],
+    spawn=calibrated_pinhole_camera_cfg(
+        intrinsic_matrix=HEAD_DEPTH_INTRINSIC,
+        distortion=HEAD_DEPTH_DISTORTION,
+        width=640,
+        height=480,
+        clipping_range=HEAD_CAMERA_CLIPPING_RANGE,
+    ),
+    offset=CameraCfg.OffsetCfg(
+        pos=HEAD_RIGHT_IR_CAMERA_POS,
+        rot=HEAD_RGB_CAMERA_ROT,
+        convention="ros",
+    ),
 )
 
 IGRIS_C_RIGHT_RGB_CAMERA_CFG = CameraCfg(
@@ -278,6 +237,7 @@ class IGRISCRobotSceneCfg(InteractiveSceneCfg):
     robot = IGRIS_C_ROBOT_CFG
     head_camera = IGRIS_C_HEAD_CAMERA_CFG
     head_depth_camera = IGRIS_C_HEAD_DEPTH_CAMERA_CFG
+    head_right_ir_camera = IGRIS_C_HEAD_RIGHT_IR_CAMERA_CFG
     right_rgb_camera = IGRIS_C_RIGHT_RGB_CAMERA_CFG
     left_rgb_camera = IGRIS_C_LEFT_RGB_CAMERA_CFG
     left_wrist_camera = IGRIS_C_LEFT_WRIST_CAMERA_CFG

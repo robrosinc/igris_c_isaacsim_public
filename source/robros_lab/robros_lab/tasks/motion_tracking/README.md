@@ -20,7 +20,17 @@ See the repository [README](../../../../../README.md) for installation and execu
 | Default reference | Captured standing pose |
 | Optional reference | Offline NPZ replay |
 
-The scene contains the robot, six robot-mounted cameras, a ground plane, and a dome light. The calibrated head RGB/depth pair and wrist cameras mirror the H1 task settings; the two head-mounted side RGB cameras remain available. The scene does not create a table, box, or external environment USD.
+The scene contains the robot, seven robot-mounted cameras, a ground plane, and a dome light. Its head cameras use ideal pinhole RGB and left/right IR mount parameters; the left IR viewpoint renders native depth, while the right IR viewpoint renders an RGB proxy rather than infrared intensity. The wrist cameras retain their existing calibration, and the two head-mounted side RGB cameras remain available. The scene does not create a table, box, or external environment USD.
+
+## Inspect head cameras
+
+From this repository root, run the Viser viewer with a Python environment that has `viser[urdf]`, `numpy`, and `scipy` installed:
+
+```bash
+python scripts/motion_tracking/visualize_head_depth_cameras.py
+```
+
+Open `http://127.0.0.1:8080`. The viewer overlays the head RGB and both IR camera mounts on this repository's robot mesh. Colored image-plane boundaries and rays are computed from each camera's intrinsic matrix and OpenCV distortion; the sidebar lists the numeric values and lets you toggle cameras. Pass `--check` to validate the inputs without starting Viser.
 
 ## Layout
 
@@ -53,8 +63,8 @@ motion_tracking/
 | `__init__.py` | Registers the Gym task |
 | `env_cfg.py` | Composes scene, action, observation, command, reward, and termination configs |
 | `scene_cfg.py` | Adds ground and lighting to the reusable robot scene |
-| `camera_cfg.py` | Applies the H1 OpenCV pinhole intrinsic and distortion model |
-| `robot_cfg.py` | Selects the wrist/hand robot and defines the six mounted cameras |
+| `camera_cfg.py` | Builds pinhole camera intrinsics and applies OpenCV distortion when configured |
+| `robot_cfg.py` | Selects the wrist/hand robot and defines the seven mounted cameras |
 | `student_contract.py` | Defines the immutable 23-joint checkpoint order |
 | `observations.py` | Defines and validates the 1,601-element Student observation |
 | `action_adapter.py` | Validates the 23 actions and applies the safe joint-position action config |

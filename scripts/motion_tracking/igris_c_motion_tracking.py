@@ -14,6 +14,7 @@ DEFAULT_CHECKPOINT = REPOSITORY_ROOT / "logs/rsl_rl/igris_c_tracking/student_108
 CAMERA_PRIM_PATHS = {
     "head_camera": "Link_Neck_Pitch/d435_camera",
     "head_depth_camera": "Link_Neck_Pitch/d435_depth_camera",
+    "head_right_ir_camera": "Link_Neck_Pitch/d435_right_ir_camera",
     "right_rgb_camera": "Link_Neck_Pitch/RightRgbCamera",
     "left_rgb_camera": "Link_Neck_Pitch/LeftRgbCamera",
     "left_wrist_camera": "Left_Hand/l_hand_camera_link",
