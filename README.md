@@ -187,6 +187,16 @@ The original 280-observation, 15-action policy remains available by passing
 `--task Robros-IGRIS-C-Flat-Teleop-Lowerbody-Action` together with
 `--checkpoint logs/rsl_rl/igris_c_hugwbc/model_16900.pt`.
 
+### Appearance preview
+
+The wrist/hand-independent robot loads a local appearance USD layer with detailed
+head and torso meshes and PBR materials on the other links. The upper-torso panels,
+wrists, hands, fingers, and three face-cover pieces use the same white metallic
+material as the shoulders. Compare the original and painted visuals with
+`python scripts/tools/visualize_igris_c_appearance.py`.
+See [appearance/README.md](source/robros_lab/robros_lab/assets/robots/robros/igris_c/appearance/README.md)
+for dependencies, regeneration, and limits.
+
 ## Motion examples
 
 All included motions run at 50 Hz. Without `--loop`, the final frame is held after playback finishes.

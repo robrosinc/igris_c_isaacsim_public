@@ -1,0 +1,734 @@
+#usda 1.0
+(
+    defaultPrim = "IGRIS_C_WRIST_HAND"
+    subLayers = [
+        @igris_c_face_outer.usdc@,
+        @igris_c_torso_outer.usdc@,
+        @igris_c.usd@
+    ]
+)
+
+over "IGRIS_C_WRIST_HAND"
+{
+    def Scope "Looks_Painted"
+    {
+        def Material "mat_0"
+        {
+            token outputs:surface.connect = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0/PreviewSurface.outputs:surface>
+
+            def Shader "PreviewSurface"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:diffuseColor = (1, 1, 1)
+                float inputs:metallic = 0.8
+                float inputs:opacity = 1
+                float inputs:roughness = 0.4
+                token outputs:surface
+            }
+        }
+
+        def Material "mat_1"
+        {
+            token outputs:surface.connect = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_1/PreviewSurface.outputs:surface>
+
+            def Shader "PreviewSurface"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:diffuseColor = (0.5647118, 0.5647118, 0.5647118)
+                float inputs:metallic = 0.8
+                float inputs:opacity = 1
+                float inputs:roughness = 0.4
+                token outputs:surface
+            }
+        }
+
+        def Material "mat_3"
+        {
+            token outputs:surface.connect = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_3/PreviewSurface.outputs:surface>
+
+            def Shader "PreviewSurface"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:diffuseColor = (0.8, 0.8, 0.8)
+                float inputs:metallic = 1
+                float inputs:opacity = 1
+                float inputs:roughness = 0.1
+                token outputs:surface
+            }
+        }
+    }
+
+    over "Looks_TorsoOuter"
+    {
+        over "mat_25"
+        {
+            over "PreviewSurface"
+            {
+                color3f inputs:diffuseColor = (1, 1, 1)
+                float inputs:metallic = 0.8
+                float inputs:opacity = 1
+                float inputs:roughness = 0.4
+            }
+        }
+    }
+
+    over "base_link"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "Link_Waist_Yaw"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "Link_Waist_Roll"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "Link_Waist_Pitch"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "Link_Hip_Pitch_Left"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_1> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "Link_Hip_Roll_Left"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_1> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "Link_Hip_Yaw_Left"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "Link_Knee_Pitch_Left"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "Link_Ankle_Pitch_Left"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "Link_Ankle_Roll_Left"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_3> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "Link_Hip_Pitch_Right"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_1> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "Link_Hip_Roll_Right"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_1> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "Link_Hip_Yaw_Right"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "Link_Knee_Pitch_Right"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "Link_Ankle_Pitch_Right"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "Link_Ankle_Roll_Right"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_3> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "Link_Shoulder_Pitch_Left"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "Link_Shoulder_Roll_Left"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "Link_Shoulder_Yaw_Left"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "Link_Elbow_Pitch_Left"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "Link_Wrist_Yaw_Left"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "Link_Wrist_Roll_Left"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "Link_Wrist_Pitch_Left"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "Left_Hand"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "Link_Shoulder_Pitch_Right"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "Link_Shoulder_Roll_Right"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "Link_Shoulder_Yaw_Right"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "Link_Elbow_Pitch_Right"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "Link_Wrist_Yaw_Right"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "Link_Wrist_Roll_Right"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "Link_Wrist_Pitch_Right"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "Right_Hand"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "Link_Neck_Yaw"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "l_thumb_proximal"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "l_thumb_middle"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "l_thumb_distal"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "l_index_middle"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "l_index_distal"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "l_middle_middle"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "l_middle_distal"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "l_ring_middle"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "l_ring_distal"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "l_little_middle"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "l_little_distal"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "r_thumb_proximal"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "r_thumb_middle"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "r_thumb_distal"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "r_index_middle"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "r_index_distal"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "r_middle_middle"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "r_middle_distal"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "r_ring_middle"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "r_ring_distal"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "r_little_middle"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+
+    over "r_little_distal"
+    {
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            rel material:binding = </IGRIS_C_WRIST_HAND/Looks_Painted/mat_0> (
+                bindMaterialAs = "strongerThanDescendants"
+            )
+        }
+    }
+}

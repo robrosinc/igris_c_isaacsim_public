@@ -18,8 +18,8 @@ def _robot_usd_dir(robot_name: str, variant_dir: str | None = None) -> Path:
     return usd_dir
 
 
-def _usd_path(robot_name: str, variant_dir: str | None = None) -> str:
-    usd_path = _robot_usd_dir(robot_name, variant_dir) / f"{robot_name}.usd"
+def _usd_path(robot_name: str, variant_dir: str | None = None, filename: str | None = None) -> str:
+    usd_path = _robot_usd_dir(robot_name, variant_dir) / (filename or f"{robot_name}.usd")
     if not usd_path.is_file():
         raise FileNotFoundError(f"Robot USD does not exist: {usd_path}")
     return str(usd_path)
@@ -182,7 +182,7 @@ IGRISC_WRIST_HAND_ACTUATOR_CFG = {
 
 IGRIS_C_WRIST_HAND_INDEPENDENT_CFG = ArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
-        usd_path=_usd_path("igris_c", "extras/wrist_hand_independent"),
+        usd_path=_usd_path("igris_c", "extras/wrist_hand_independent", "igris_c_colored.usda"),
         activate_contact_sensors=True,
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
             disable_gravity=False,
