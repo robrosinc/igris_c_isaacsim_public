@@ -122,8 +122,9 @@ class WristHandPoseController:
         joint_names: Sequence[str],
         joint_pos: torch.Tensor,
         joint_vel: torch.Tensor | None = None,
+        validate_finite: bool = True,
     ) -> None:
-        """Update wrist and active-hand targets in the controller's fixed order."""
+        """Update targets; trusted prevalidated sources can skip scalar GPU reads."""
 
         resolved_joint_names = tuple(joint_names)
         if resolved_joint_names != AUXILIARY_JOINT_NAMES:
@@ -141,7 +142,7 @@ class WristHandPoseController:
                 f"Wrist/hand position target is on {joint_pos.device}, "
                 f"expected {self._position_target.device}."
             )
-        if not torch.isfinite(joint_pos).all().item():
+        if validate_finite and not torch.isfinite(joint_pos).all().item():
             raise ValueError("Wrist/hand position target contains NaN or Inf.")
 
         if joint_vel is None:
@@ -156,7 +157,7 @@ class WristHandPoseController:
                 f"Wrist/hand velocity target is on {joint_vel.device}, "
                 f"expected {self._velocity_target.device}."
             )
-        if not torch.isfinite(joint_vel).all().item():
+        if validate_finite and not torch.isfinite(joint_vel).all().item():
             raise ValueError("Wrist/hand velocity target contains NaN or Inf.")
 
         self._position_target.copy_(

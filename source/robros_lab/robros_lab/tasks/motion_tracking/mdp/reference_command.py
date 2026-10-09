@@ -181,6 +181,14 @@ class ReferenceCommand(CommandTerm):
     def _update_metrics(self) -> None:
         """The inference-only reference command currently has no metrics."""
 
+    def compute(self, dt: float) -> None:
+        """Stream fixed-timeline references without a GPU resampling check."""
+
+        if self.cfg.resampling_time_range != (1.0e9, 1.0e9):
+            super().compute(dt)
+            return
+        self._update_command()
+
     def _resample_command(self, env_ids: Sequence[int]) -> None:
         self.source.reset(env_ids)
 

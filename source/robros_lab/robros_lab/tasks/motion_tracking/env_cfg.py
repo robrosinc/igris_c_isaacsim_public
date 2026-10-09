@@ -1,11 +1,13 @@
 """Free-base IGRIS-C motion tracking environment."""
 
+import torch
 from isaaclab.envs import ManagerBasedRLEnv, ManagerBasedRLEnvCfg
 from isaaclab.utils import configclass
 
 from .action_adapter import MotionTrackingActionsCfg
+from .history_buffer import install_actuator_delay_buffers, install_student_history_buffers
 from .mdp import ReferenceCommandCfg
-from .observations import MotionTrackingObservationsCfg
+from .observations import STUDENT_HISTORY_TERM_NAMES, MotionTrackingObservationsCfg
 from .scene_cfg import IGRISCMotionTrackingSceneCfg
 from .student_contract import STUDENT_JOINT_NAMES
 
@@ -75,4 +77,42 @@ class IGRISCMotionTrackingEnvCfg(ManagerBasedRLEnvCfg):
 class IGRISCMotionTrackingEnv(ManagerBasedRLEnv):
     """Registered motion tracking inference environment."""
 
-    pass
+    def __init__(self, cfg: IGRISCMotionTrackingEnvCfg, **kwargs) -> None:
+        super().__init__(cfg=cfg, **kwargs)
+        install_student_history_buffers(self.observation_manager, STUDENT_HISTORY_TERM_NAMES)
+        install_actuator_delay_buffers(self.scene["robot"])
+
+    def step(self, action: torch.Tensor):
+        """Advance an inference-only episode without checking empty done terms."""
+
+        if (
+            self.termination_manager.active_terms
+            or self.reward_manager.active_terms
+            or self.recorder_manager.active_terms
+        ):
+            return super().step(action)
+
+        self.action_manager.process_action(action.to(self.device))
+        is_rendering = self.sim.has_gui() or self.sim.has_rtx_sensors()
+        for _ in range(self.cfg.decimation):
+            self._sim_step_counter += 1
+            self.action_manager.apply_action()
+            self.scene.write_data_to_sim()
+            self.sim.step(render=False)
+            if self._sim_step_counter % self.cfg.sim.render_interval == 0 and is_rendering:
+                self.sim.render()
+            self.scene.update(dt=self.physics_dt)
+
+        self.episode_length_buf += 1
+        self.common_step_counter += 1
+        self.reset_terminated = self.termination_manager.terminated
+        self.reset_time_outs = self.termination_manager.time_outs
+        self.reset_terminated.zero_()
+        self.reset_time_outs.zero_()
+        self.reset_buf = self.reset_terminated | self.reset_time_outs
+        self.reward_buf = self.reward_manager.compute(dt=self.step_dt)
+        self.command_manager.compute(dt=self.step_dt)
+        if "interval" in self.event_manager.available_modes:
+            self.event_manager.apply(mode="interval", dt=self.step_dt)
+        self.obs_buf = self.observation_manager.compute(update_history=True)
+        return self.obs_buf, self.reward_buf, self.reset_terminated, self.reset_time_outs, self.extras

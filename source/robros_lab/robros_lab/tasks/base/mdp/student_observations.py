@@ -109,12 +109,14 @@ class finite_difference_obs(ManagerTermBase):
             self._prev_obs = obs.clone()
             self._initialized.zero_()
 
-        differentiated_obs = torch.zeros_like(obs)
-        initialized_mask = self._initialized
-        if torch.any(initialized_mask):
-            differentiated_obs[initialized_mask] = (
-                obs[initialized_mask] - self._prev_obs[initialized_mask]
-            ) / self._dt
+        initialized_mask = self._initialized.reshape(
+            (-1,) + (1,) * (obs.ndim - 1)
+        )
+        differentiated_obs = torch.where(
+            initialized_mask,
+            (obs - self._prev_obs) / self._dt,
+            torch.zeros_like(obs),
+        )
         self._prev_obs.copy_(obs)
 
         if not self._enable_lpf:
@@ -125,16 +127,12 @@ class finite_difference_obs(ManagerTermBase):
             self._filtered_obs = differentiated_obs.clone()
             self._initialized.zero_()
 
-        uninitialized_mask = ~self._initialized
-        if torch.any(uninitialized_mask):
-            self._filtered_obs[uninitialized_mask] = differentiated_obs[uninitialized_mask]
-            self._initialized[uninitialized_mask] = True
-
-        initialized_mask = ~uninitialized_mask
-        if torch.any(initialized_mask):
-            self._filtered_obs[initialized_mask] = (
-                (1.0 - self._lpf_alpha) * self._filtered_obs[initialized_mask]
-                + self._lpf_alpha * differentiated_obs[initialized_mask]
-            )
+        self._filtered_obs.copy_(torch.where(
+            initialized_mask,
+            (1.0 - self._lpf_alpha) * self._filtered_obs
+            + self._lpf_alpha * differentiated_obs,
+            differentiated_obs,
+        ))
+        self._initialized.fill_(True)
 
         return self._filtered_obs.clone()

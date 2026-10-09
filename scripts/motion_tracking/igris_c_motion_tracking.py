@@ -64,6 +64,12 @@ parser.add_argument(
     action="store_true",
     help="Sleep when simulation is faster than the 50 Hz policy period.",
 )
+parser.add_argument(
+    "--torch-num-threads",
+    type=int,
+    default=1,
+    help="PyTorch CPU threads for small-batch simulation and policy inference.",
+)
 
 parser.add_argument(
     "--disable_fabric",
@@ -77,10 +83,18 @@ parser.add_argument(
     help="GUI viewport source.",
 )
 AppLauncher.add_app_launcher_args(parser)
+parser.set_defaults(device="auto")
 args_cli = parser.parse_args()
-args_cli.enable_cameras = True
+if args_cli.num_envs <= 0:
+    parser.error("--num_envs must be positive")
+if args_cli.torch_num_threads < 1:
+    parser.error("--torch-num-threads must be positive")
+if args_cli.device == "auto":
+    args_cli.device = "cpu" if args_cli.num_envs <= 32 else "cuda:0"
+render_all_cameras = args_cli.enable_cameras
+args_cli.enable_cameras = render_all_cameras or args_cli.viewport_camera != "viewer"
 kit_args = args_cli.kit_args or ""
-if f"--enable {LENS_DISTORTION_EXTENSION}" not in kit_args:
+if args_cli.enable_cameras and f"--enable {LENS_DISTORTION_EXTENSION}" not in kit_args:
     args_cli.kit_args = f"{kit_args} --enable {LENS_DISTORTION_EXTENSION}".strip()
 
 app_launcher = AppLauncher(args_cli)
@@ -186,12 +200,16 @@ def main() -> None:
 
     if args_cli.motion_file is None and (args_cli.loop or args_cli.stop_at_end):
         raise ValueError("--loop and --stop_at_end require --motion_file.")
+    torch.set_num_threads(args_cli.torch_num_threads)
     env_cfg = parse_env_cfg(
         args_cli.task,
         device=args_cli.device,
         num_envs=args_cli.num_envs,
         use_fabric=not args_cli.disable_fabric,
     )
+    for camera_name in CAMERA_PRIM_PATHS:
+        if not render_all_cameras and camera_name != args_cli.viewport_camera:
+            setattr(env_cfg.scene, camera_name, None)
 
     env = gym.make(args_cli.task, cfg=env_cfg)
     unwrapped_env = env.unwrapped
@@ -260,6 +278,10 @@ def main() -> None:
             )
             print(f"[INFO]: Replay mode: {'loop' if args_cli.loop else 'hold final frame'}")
         print(f"[INFO]: Policy step: {unwrapped_env.step_dt:.6f} s")
+        print(
+            f"[INFO]: Simulation/policy device: {unwrapped_env.device}; "
+            f"PyTorch CPU threads: {torch.get_num_threads()}"
+        )
 
         step_count = 0
         report_wall_start = time.perf_counter()
@@ -275,6 +297,7 @@ def main() -> None:
                         joint_names=auxiliary_reference.joint_names,
                         joint_pos=auxiliary_reference.joint_pos,
                         joint_vel=auxiliary_reference.joint_vel,
+                        validate_finite=False,
                     )
                 raw_action = policy.infer(student_observation)
                 adapted_action = action_adapter.adapt(
