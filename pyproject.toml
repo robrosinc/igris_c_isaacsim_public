@@ -1,0 +1,68 @@
+[project]
+name = "igris-c-isaacsim-runtime"
+version = "0.1.0"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "isaaclab-dev[isaacsim]",
+    "robros-lab",
+]
+
+[tool.igris_c.revisions]
+isaac_lab = "ae37b028ea415c91ea2bc32609efcd759ed2b974"
+isaac_sim = "7c206f75bdadd9e05fc457f19863ca4c3f0cb693"
+
+[[tool.uv.index]]
+url = "https://pypi.nvidia.com"
+
+[[tool.uv.index]]
+name = "pypi-public"
+url = "https://pypi.org/simple"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[tool.uv]
+package = false
+index-strategy = "unsafe-best-match"
+prerelease = "allow"
+python-preference = "only-managed"
+environments = ["sys_platform == 'linux' and platform_machine == 'x86_64'"]
+override-dependencies = [
+    "numpy>=2",
+    "mujoco~=3.11.0",
+    "mujoco-warp~=3.11.0",
+    "newton[sim]==1.5.2",
+    "newton-usd-schemas>=0.4.1",
+    "torch==2.11.0",
+    "torchvision==0.26.0",
+    "torchaudio==2.11.0",
+    "packaging>=20,<27",
+]
+
+[tool.uv.sources]
+robros-lab = { path = "source/robros_lab", editable = true }
+isaaclab-dev = { path = "third_party/IsaacLab", editable = true }
+isaaclab = { path = "third_party/IsaacLab/source/isaaclab", editable = true }
+isaaclab-assets = { path = "third_party/IsaacLab/source/isaaclab_assets", editable = true }
+isaaclab-contrib = { path = "third_party/IsaacLab/source/isaaclab_contrib", editable = true }
+isaaclab-experimental = { path = "third_party/IsaacLab/source/isaaclab_experimental", editable = true }
+isaaclab-mimic = { path = "third_party/IsaacLab/source/isaaclab_mimic", editable = true }
+isaaclab-newton = { path = "third_party/IsaacLab/source/isaaclab_newton", editable = true }
+isaaclab-ov = { path = "third_party/IsaacLab/source/isaaclab_ov", editable = true }
+isaaclab-physx = { path = "third_party/IsaacLab/source/isaaclab_physx", editable = true }
+isaaclab-ppisp = { path = "third_party/IsaacLab/source/isaaclab_ppisp", editable = true }
+isaaclab-rl = { path = "third_party/IsaacLab/source/isaaclab_rl", editable = true }
+isaaclab-tasks = { path = "third_party/IsaacLab/source/isaaclab_tasks", editable = true }
+isaaclab-tasks-experimental = { path = "third_party/IsaacLab/source/isaaclab_tasks_experimental", editable = true }
+isaaclab-teleop = { path = "third_party/IsaacLab/source/isaaclab_teleop", editable = true }
+isaaclab-visualizers = { path = "third_party/IsaacLab/source/isaaclab_visualizers", editable = true }
+omniverseclient = { index = "pypi-public" }
+ovphysx = { index = "pypi-public" }
+ovrtx = { index = "pypi-public" }
+ovstage = { index = "pypi-public" }
+torch = { index = "pytorch-cu128" }
+torchvision = { index = "pytorch-cu128" }
+torchaudio = { index = "pytorch-cu128" }

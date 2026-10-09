@@ -14,7 +14,8 @@ from isaaclab.managers import TerminationTermCfg as DoneTerm
 from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.terrains import TerrainImporterCfg
 from isaaclab.utils import configclass
-from isaaclab.utils.noise import AdditiveGaussianNoiseCfg
+from isaaclab.utils.noise import GaussianNoiseCfg
+from isaaclab_physx.physics import PhysxCfg
 
 from robros_lab.assets import IGRIS_C_WRIST_HAND_INDEPENDENT_CFG
 from robros_lab.tasks.hug_wbc import mdp as hugwbc_mdp
@@ -338,11 +339,11 @@ class LowerBodySymmetryObservationsCfg:
         )
         base_ang_vel = ObsTerm(
             func=mdp.base_ang_vel,
-            noise=AdditiveGaussianNoiseCfg(std=0.05),
+            noise=GaussianNoiseCfg(std=0.05, operation="add"),
         )
         projected_gravity = ObsTerm(
             func=mdp.projected_gravity,
-            noise=AdditiveGaussianNoiseCfg(std=0.02),
+            noise=GaussianNoiseCfg(std=0.02, operation="add"),
         )
         joint_pos = ObsTerm(
             func=mdp.joint_pos_rel,
@@ -353,7 +354,7 @@ class LowerBodySymmetryObservationsCfg:
                     preserve_order=True,
                 )
             },
-            noise=AdditiveGaussianNoiseCfg(std=0.02),
+            noise=GaussianNoiseCfg(std=0.02, operation="add"),
         )
         joint_vel = ObsTerm(
             func=mdp.joint_vel,
@@ -364,7 +365,7 @@ class LowerBodySymmetryObservationsCfg:
                     preserve_order=True,
                 )
             },
-            noise=AdditiveGaussianNoiseCfg(std=0.4),
+            noise=GaussianNoiseCfg(std=0.4, operation="add"),
         )
         last_action = ObsTerm(
             func=mdp.last_action,
@@ -444,6 +445,8 @@ class IGRISCHugWBCFlatEnvCfg(ManagerBasedRLEnvCfg):
         self.decimation = 4
         self.episode_length_s = 1.0e9
         self.sim.dt = 0.005
+        self.sim.physics = PhysxCfg()
+        self.sim.use_newton_actuators = False
         self.sim.render_interval = self.decimation
         self.sim.physics_material = self.scene.terrain.physics_material
         self.viewer.eye = (3.0, 3.0, 2.0)

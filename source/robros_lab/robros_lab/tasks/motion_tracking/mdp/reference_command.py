@@ -114,7 +114,7 @@ class ReferenceCommand(CommandTerm):
 
     @property
     def anchor_quat_w(self) -> torch.Tensor:
-        return self._require_reference().anchor_quat_wxyz
+        return self._require_reference().anchor_quat_xyzw
 
     @property
     def anchor_lin_vel_b(self) -> torch.Tensor:
@@ -126,19 +126,19 @@ class ReferenceCommand(CommandTerm):
 
     @property
     def robot_anchor_pos_w(self) -> torch.Tensor:
-        return self.robot.data.body_pos_w[:, self.robot_anchor_body_index]
+        return self.robot.data.body_pos_w.torch[:, self.robot_anchor_body_index]
 
     @property
     def robot_anchor_quat_w(self) -> torch.Tensor:
-        return self.robot.data.body_quat_w[:, self.robot_anchor_body_index]
+        return self.robot.data.body_quat_w.torch[:, self.robot_anchor_body_index]
 
     @property
     def robot_anchor_lin_vel_w(self) -> torch.Tensor:
-        return self.robot.data.body_lin_vel_w[:, self.robot_anchor_body_index]
+        return self.robot.data.body_lin_vel_w.torch[:, self.robot_anchor_body_index]
 
     @property
     def robot_anchor_ang_vel_w(self) -> torch.Tensor:
-        return self.robot.data.body_ang_vel_w[:, self.robot_anchor_body_index]
+        return self.robot.data.body_ang_vel_w.torch[:, self.robot_anchor_body_index]
 
     def set_source(
         self,
@@ -230,7 +230,7 @@ class ReferenceCommand(CommandTerm):
             "joint_pos": (self.num_envs, len(self.resolved_joint_names)),
             "joint_vel": (self.num_envs, len(self.resolved_joint_names)),
             "anchor_pos_z": (self.num_envs, 1),
-            "anchor_quat_wxyz": (self.num_envs, 4),
+            "anchor_quat_xyzw": (self.num_envs, 4),
             "anchor_lin_vel_b": (self.num_envs, 3),
             "anchor_ang_vel_b": (self.num_envs, 3),
             "body_pos_b": (self.num_envs, len(self.resolved_body_names), 3),

@@ -27,7 +27,7 @@ The scene contains the robot, seven robot-mounted cameras, a ground plane, and a
 From this repository root, run the Viser viewer with a Python environment that has `viser[urdf]`, `numpy`, and `scipy` installed:
 
 ```bash
-python scripts/motion_tracking/visualize_head_depth_cameras.py
+./run_isaac.sh python scripts/motion_tracking/visualize_head_depth_cameras.py
 ```
 
 Open `http://127.0.0.1:8080`. The viewer overlays the head RGB and both IR camera mounts on this repository's robot mesh. Colored image-plane boundaries and rays are computed from each camera's intrinsic matrix and OpenCV distortion; the sidebar lists the numeric values and lets you toggle cameras. Pass `--check` to validate the inputs without starting Viser.
@@ -314,7 +314,7 @@ class MotionReferenceSource(Protocol):
 From the repository root:
 
 ```bash
-python3 -m py_compile \
+./run_isaac.sh python -m py_compile \
     source/robros_lab/robros_lab/tasks/motion_tracking/*.py \
     source/robros_lab/robros_lab/tasks/motion_tracking/controllers/*.py \
     source/robros_lab/robros_lab/tasks/motion_tracking/mdp/*.py

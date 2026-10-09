@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 import time
 from pathlib import Path
@@ -31,7 +32,16 @@ parser.add_argument("--stop_at_end", action="store_true")
 parser.add_argument("--real_time", action="store_true")
 parser.add_argument("--disable_fabric", action="store_true")
 AppLauncher.add_app_launcher_args(parser)
+parser.add_argument("--headless", action="store_true", help="Run without the Kit window.")
 args_cli = parser.parse_args()
+if (
+    args_cli.visualizer is None
+    and not args_cli.headless
+    and os.environ.get("HEADLESS", "0") != "1"
+    and args_cli.livestream not in (1, 2)
+    and os.environ.get("LIVESTREAM", "0") == "0"
+):
+    args_cli.visualizer = ["kit"]
 
 app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
@@ -206,5 +216,12 @@ def main() -> None:
 if __name__ == "__main__":
     try:
         main()
+    except KeyboardInterrupt:
+        print("[INFO]: Interrupted by user.", flush=True)
+    except Exception:
+        import traceback
+
+        traceback.print_exc()
+        raise
     finally:
         simulation_app.close()

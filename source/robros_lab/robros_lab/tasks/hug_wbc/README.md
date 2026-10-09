@@ -10,14 +10,14 @@ original 23 training joints while the auxiliary controller drives wrists and han
 Run random upper-body teleoperation with a fixed zero base command:
 
 ```bash
-./third_party/IsaacLab/isaaclab.sh -p scripts/hugwbc/igris_c_hugwbc.py \
+./run_isaac.sh python scripts/hugwbc/igris_c_hugwbc.py \
   --num_envs 1
 ```
 
 Replay the included synchronized base/upper-body command clip:
 
 ```bash
-./third_party/IsaacLab/isaaclab.sh -p scripts/hugwbc/igris_c_hugwbc.py \
+./run_isaac.sh python scripts/hugwbc/igris_c_hugwbc.py \
   --motion_file motion/hugwbc_forward_arm_motion.npz --num_envs 1 --loop
 ```
 

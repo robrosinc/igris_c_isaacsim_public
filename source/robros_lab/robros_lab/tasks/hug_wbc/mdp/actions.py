@@ -105,7 +105,7 @@ class CommandJointPositionAction(ActionTerm):
             raise ValueError(f"Expected a zero-width teleoperation action, got {tuple(actions.shape)}.")
         command = self._env.command_manager.get_command(self.cfg.command_name)
         self._processed_actions.copy_(command[:, self._command_ids])
-        limits = self._asset.data.soft_joint_pos_limits[:, self._joint_ids]
+        limits = self._asset.data.soft_joint_pos_limits.torch[:, self._joint_ids]
         clamped = torch.logical_or(
             self._processed_actions < limits[..., 0],
             self._processed_actions > limits[..., 1],
@@ -119,7 +119,7 @@ class CommandJointPositionAction(ActionTerm):
     def reset(self, env_ids: Sequence[int] | None = None) -> None:
         if env_ids is None:
             env_ids = slice(None)
-        self._processed_actions[env_ids] = self._asset.data.joint_pos[env_ids][
+        self._processed_actions[env_ids] = self._asset.data.joint_pos.torch[env_ids][
             :, self._joint_ids
         ]
 

@@ -35,7 +35,7 @@ Run commands from the repository root after completing the project installation.
 ### Recorded arm motion
 
 ```bash
-./third_party/IsaacLab/isaaclab.sh -p \
+./run_isaac.sh python \
   scripts/motion_tracking/igris_c_motion_tracking.py \
   --motion_file motion/recorded_arms.npz \
   --num_envs 1
@@ -44,7 +44,7 @@ Run commands from the repository root after completing the project installation.
 ### Recorded walking motion
 
 ```bash
-./third_party/IsaacLab/isaaclab.sh -p \
+./run_isaac.sh python \
   scripts/motion_tracking/igris_c_motion_tracking.py \
   --motion_file motion/recorded_walk_2.npz \
   --num_envs 1
@@ -53,7 +53,7 @@ Run commands from the repository root after completing the project installation.
 ### Right-arm and finger sequence
 
 ```bash
-./third_party/IsaacLab/isaaclab.sh -p \
+./run_isaac.sh python \
   scripts/motion_tracking/igris_c_motion_tracking.py \
   --motion_file motion/right_arm_finger_sequence.npz \
   --num_envs 1
@@ -97,13 +97,13 @@ Its wrist targets and finger targets are initialized to zero.
 Regenerate the file with the repository's generator:
 
 ```bash
-python3 scripts/tools/create_right_arm_finger_motion.py
+./run_isaac.sh python scripts/tools/create_right_arm_finger_motion.py
 ```
 
 To write a separate file instead of replacing the default output:
 
 ```bash
-python3 scripts/tools/create_right_arm_finger_motion.py \
+./run_isaac.sh python scripts/tools/create_right_arm_finger_motion.py \
   --output motion/custom_right_arm_finger_sequence.npz
 ```
 
@@ -155,7 +155,7 @@ to replay the NPZ file.
 Use NumPy to check keys and array shapes without starting Isaac Sim:
 
 ```bash
-python3 - <<'PY'
+./run_isaac.sh python - <<'PY'
 import numpy as np
 
 path = "motion/right_arm_finger_sequence.npz"

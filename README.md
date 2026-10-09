@@ -1,8 +1,8 @@
 # IGRIS-C Isaac Sim
 
-![Isaac Sim](https://img.shields.io/badge/Isaac%20Sim-5.1.0-76B900)
-![Isaac Lab](https://img.shields.io/badge/Isaac%20Lab-submodule-76B900)
-![Python](https://img.shields.io/badge/Python-3.11-3776AB)
+![Isaac Sim](https://img.shields.io/badge/Isaac%20Sim-6.1.0-76B900)
+![Isaac Lab](https://img.shields.io/badge/Isaac%20Lab-3.0%20EA-76B900)
+![Python](https://img.shields.io/badge/Python-3.12-3776AB)
 ![License](https://img.shields.io/badge/License-Apache--2.0-blue)
 
 Isaac Lab inference environments for the IGRIS-C humanoid robot. The project supports
@@ -29,22 +29,24 @@ Student checkpoint or motion-reference NPZ through the HugWBC runner.
 
 ## Requirements
 
-### Tested software stack
+### Pinned software stack
 
 | Tool | Version |
 | --- | --- |
 | OS | Ubuntu 24.04, x86_64 |
-| Python | 3.11 |
-| NVIDIA Isaac Sim | 5.1.0 |
-| PyTorch | 2.7.0 + CUDA 12.8 wheels |
-| TorchVision | 0.22.0 |
-| NVIDIA driver | CUDA 12.8-capable NVIDIA 580 series |
+| Python | 3.12 |
+| NVIDIA Isaac Sim | 6.1.0.0 pip distribution |
+| Isaac Lab | 3.0.0 Early Access submodule |
+| PyTorch | 2.11.0 + CUDA 12.8 wheels |
+| TorchVision | 0.26.0 |
 
-This repository is pinned to Isaac Sim 5.1.0 and the included Isaac Lab submodule revision. Upgrade either dependency only after validating the task, robot articulation, cameras, and Student Policy observation contract.
+The versions are locked in `uv.lock` and the Isaac Lab and Isaac Sim submodule commits. Isaac Lab 3.0 is an Early Access release.
+
+Local smoke tests ran on an RTX 5090 with Linux NVIDIA driver `580.173.02`. With `--device cpu`, Student motion tracking and both HugWBC checkpoints completed policy steps; the GUI opened, and a step with all cameras enabled completed. These short runs do not validate long-duration policy behavior or GPU physics performance.
 
 ### Recommended system
 
-The following values are based on the official [Isaac Sim 5.1 requirements](https://docs.isaacsim.omniverse.nvidia.com/5.1.0/installation/requirements.html).
+The following values are based on the official [Isaac Sim 6.1 requirements](https://docs.isaacsim.omniverse.nvidia.com/6.1.0/installation/requirements.html).
 
 | Component | Minimum | Recommended (`Good`) |
 | --- | --- | --- |
@@ -54,10 +56,9 @@ The following values are based on the official [Isaac Sim 5.1 requirements](http
 | Storage | 50 GB SSD | 500 GB SSD |
 | GPU | NVIDIA GeForce RTX 4080 | NVIDIA GeForce RTX 5080 |
 | VRAM | 16 GB | 16 GB or more |
-| Linux driver | NVIDIA 580 series | NVIDIA 580 series |
 
 An RTX GPU with RT Cores is required. Additional RAM and VRAM are recommended when increasing `--num_envs`, enabling multiple cameras, or rendering at higher resolutions.
-Use a CUDA 12.8-capable NVIDIA 580-series Linux driver for this project. NVIDIA lists `580.65.06` as the tested Linux driver for Isaac Sim 5.1.0.
+NVIDIA lists `595.58.03` as a tested Linux x86_64 driver for Isaac Sim 6.1.0. This is NVIDIA's test configuration, while the local smoke tests above used `580.173.02`.
 
 
 ## Layout
@@ -92,7 +93,7 @@ igris_c_isaacsim_public/
 
 ### 1. Install prerequisites
 
-Install a CUDA 12.8-capable NVIDIA 580-series Linux driver, Miniconda or Conda, and Git before continuing.
+Install an Isaac Sim 6.1-compatible NVIDIA driver, [uv](https://docs.astral.sh/uv/getting-started/installation/), and Git before continuing.
 
 ### 2. Clone the repository and public submodules
 
@@ -110,43 +111,19 @@ git submodule update --init third_party/IsaacLab third_party/IsaacSim
 The Isaac Lab and Isaac Sim repositories are not stored directly in this repository.
 Git reads their public upstream URLs and pinned commits from `.gitmodules` and fetches
 them into `third_party/`.
-### 3. Create the Python environment
+### 3. Install the locked Python environment
 
 ```bash
-conda create -y -n isaac_env python=3.11
-conda activate isaac_env
-
-python -m pip install --upgrade pip
+./setup_isaas.sh
 ```
 
-### 4. Install Isaac Sim and PyTorch
-
-```bash
-pip install "isaacsim[all,extscache]==5.1.0" \
-    --extra-index-url https://pypi.nvidia.com
-
-pip install -U torch==2.7.0 torchvision==0.22.0 \
-    --index-url https://download.pytorch.org/whl/cu128
-```
-
-### 5. Install Isaac Lab and ROBROS Lab
-
-```bash
-export OMNI_KIT_ACCEPT_EULA=YES
-
-cd third_party/IsaacLab
-./isaaclab.sh --install none
-cd ../..
-
-pip install -e source/robros_lab
-```
+The setup script initializes the pinned submodules and uses `uv sync --locked` to install Python 3.12, Isaac Sim, Isaac Lab, PyTorch, and ROBROS Lab into this repository's `.venv`. The first sync downloads several gigabytes. Run project scripts through `./run_isaac.sh`; it selects that environment without shell activation.
 
 ## Quick start
 
-Activate the environment before each session:
+Accept the NVIDIA Isaac Sim EULA before launching:
 
 ```bash
-conda activate isaac_env
 export OMNI_KIT_ACCEPT_EULA=YES
 ```
 
@@ -155,7 +132,7 @@ export OMNI_KIT_ACCEPT_EULA=YES
 Run without `--motion_file` to hold the initial standing reference:
 
 ```bash
-./third_party/IsaacLab/isaaclab.sh -p \
+./run_isaac.sh python \
     scripts/motion_tracking/igris_c_motion_tracking.py \
     --num_envs 1
 ```
@@ -174,7 +151,7 @@ The default HugWBC task is the 700-observation, 13-action lower-body symmetry po
 Run a 200-step headless smoke test with:
 
 ```bash
-./third_party/IsaacLab/isaaclab.sh -p \
+./run_isaac.sh python \
     scripts/hugwbc/igris_c_hugwbc.py \
     --motion_file motion/hugwbc_forward_arm_motion.npz \
     --num_envs 1 --headless --max_steps 200
@@ -193,7 +170,7 @@ The wrist/hand-independent robot loads a local appearance USD layer with detaile
 head and torso meshes and PBR materials on the other links. The upper-torso panels,
 wrists, hands, fingers, and three face-cover pieces use the same white metallic
 material as the shoulders. Compare the original and painted visuals with
-`python scripts/tools/visualize_igris_c_appearance.py`.
+`./run_isaac.sh python scripts/tools/visualize_igris_c_appearance.py`.
 See [appearance/README.md](source/robros_lab/robros_lab/assets/robots/robros/igris_c/appearance/README.md)
 for dependencies, regeneration, and limits.
 
@@ -211,7 +188,7 @@ All included motions run at 50 Hz. Without `--loop`, the final frame is held aft
 ### Recorded arm motion
 
 ```bash
-./third_party/IsaacLab/isaaclab.sh -p \
+./run_isaac.sh python \
     scripts/motion_tracking/igris_c_motion_tracking.py \
     --motion_file motion/recorded_arms.npz \
     --num_envs 1
@@ -220,7 +197,7 @@ All included motions run at 50 Hz. Without `--loop`, the final frame is held aft
 ### Recorded walking motion
 
 ```bash
-./third_party/IsaacLab/isaaclab.sh -p \
+./run_isaac.sh python \
     scripts/motion_tracking/igris_c_motion_tracking.py \
     --motion_file motion/recorded_walk_2.npz \
     --num_envs 1
@@ -229,7 +206,7 @@ All included motions run at 50 Hz. Without `--loop`, the final frame is held aft
 ### Right arm and finger sequence
 
 ```bash
-./third_party/IsaacLab/isaaclab.sh -p \
+./run_isaac.sh python \
     scripts/motion_tracking/igris_c_motion_tracking.py \
     --motion_file motion/right_arm_finger_sequence.npz \
     --num_envs 1
@@ -238,7 +215,7 @@ All included motions run at 50 Hz. Without `--loop`, the final frame is held aft
 Add `--loop` to repeat any motion:
 
 ```bash
-./third_party/IsaacLab/isaaclab.sh -p \
+./run_isaac.sh python \
     scripts/motion_tracking/igris_c_motion_tracking.py \
     --motion_file motion/right_arm_finger_sequence.npz \
     --num_envs 1 \
@@ -251,7 +228,7 @@ This file uses `schema_version="igris_c_hugwbc_command_v1"` and must be replayed
 through the HugWBC runner:
 
 ```bash
-./third_party/IsaacLab/isaaclab.sh -p \
+./run_isaac.sh python \
     scripts/hugwbc/igris_c_hugwbc.py \
     --motion_file motion/hugwbc_forward_arm_motion.npz \
     --num_envs 1 --loop

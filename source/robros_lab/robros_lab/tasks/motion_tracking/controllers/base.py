@@ -31,7 +31,7 @@ class MotionReferenceFrame:
 
     * joint_pos and joint_vel: (num_envs, 23)
     * anchor_pos_z: (num_envs, 1)
-    * anchor_quat_wxyz: (num_envs, 4)
+    * anchor_quat_xyzw: (num_envs, 4)
     * anchor_lin_vel_b and anchor_ang_vel_b: (num_envs, 3)
     * body_pos_b: (num_envs, num_bodies, 3)
 
@@ -44,7 +44,7 @@ class MotionReferenceFrame:
     joint_pos: torch.Tensor
     joint_vel: torch.Tensor
     anchor_pos_z: torch.Tensor
-    anchor_quat_wxyz: torch.Tensor
+    anchor_quat_xyzw: torch.Tensor
     anchor_lin_vel_b: torch.Tensor
     anchor_ang_vel_b: torch.Tensor
     body_names: tuple[str, ...]
@@ -124,7 +124,7 @@ def validate_motion_reference(
         "joint_pos": (num_envs, STUDENT_JOINT_COUNT),
         "joint_vel": (num_envs, STUDENT_JOINT_COUNT),
         "anchor_pos_z": (num_envs, 1),
-        "anchor_quat_wxyz": (num_envs, 4),
+        "anchor_quat_xyzw": (num_envs, 4),
         "anchor_lin_vel_b": (num_envs, 3),
         "anchor_ang_vel_b": (num_envs, 3),
         "body_pos_b": (num_envs, len(body_names), 3),
@@ -148,7 +148,7 @@ def validate_motion_reference(
         if not torch.isfinite(value).all().item():
             raise ValueError(f"Reference {field_name} contains NaN or Inf.")
 
-    quaternion_norm = torch.linalg.vector_norm(reference.anchor_quat_wxyz, dim=-1)
+    quaternion_norm = torch.linalg.vector_norm(reference.anchor_quat_xyzw, dim=-1)
     if not torch.allclose(
         quaternion_norm,
         torch.ones_like(quaternion_norm),

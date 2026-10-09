@@ -95,7 +95,7 @@ class TeleoperationCommand(CommandTerm):
         self._joint_name_to_command_id = {
             name: index for index, name in enumerate(self.joint_names)
         }
-        self._command = self.robot.data.default_joint_pos[:, self.joint_ids].clone()
+        self._command = self.robot.data.default_joint_pos.torch[:, self.joint_ids].clone()
         self._command_start = self._command.clone()
         self._command_target = self._command.clone()
         self._command_interval = torch.ones(self.num_envs, device=self.device)

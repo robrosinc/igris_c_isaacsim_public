@@ -90,17 +90,17 @@ class StandingReferenceSource:
         if not self._robot.is_initialized:
             raise RuntimeError("The robot articulation must be initialized before capturing a standing reference.")
 
-        joint_pos = self._robot.data.joint_pos.index_select(1, self._joint_indices).detach().clone()
+        joint_pos = self._robot.data.joint_pos.torch.index_select(1, self._joint_indices).detach().clone()
         joint_vel = torch.zeros_like(joint_pos)
 
-        anchor_pos_w = self._robot.data.body_pos_w[:, self._anchor_body_index].detach()
-        anchor_quat_w = self._robot.data.body_quat_w[:, self._anchor_body_index].detach().clone()
+        anchor_pos_w = self._robot.data.body_pos_w.torch[:, self._anchor_body_index].detach()
+        anchor_quat_w = self._robot.data.body_quat_w.torch[:, self._anchor_body_index].detach().clone()
         quaternion_norm = torch.linalg.vector_norm(anchor_quat_w, dim=-1, keepdim=True)
         if torch.any(quaternion_norm <= torch.finfo(anchor_quat_w.dtype).eps).item():
             raise ValueError("Cannot capture a standing reference with a zero-norm anchor quaternion.")
         anchor_quat_w.div_(quaternion_norm)
 
-        body_pos_w = self._robot.data.body_pos_w.index_select(1, self._body_indices).detach()
+        body_pos_w = self._robot.data.body_pos_w.torch.index_select(1, self._body_indices).detach()
         body_delta_w = body_pos_w - anchor_pos_w.unsqueeze(1)
         expanded_anchor_quat = anchor_quat_w.unsqueeze(1).expand(-1, len(self._body_names), -1)
         body_pos_b = quat_apply_inverse(expanded_anchor_quat, body_delta_w).clone()
@@ -119,7 +119,7 @@ class StandingReferenceSource:
             joint_pos=joint_pos,
             joint_vel=joint_vel,
             anchor_pos_z=anchor_pos_z,
-            anchor_quat_wxyz=anchor_quat_w,
+            anchor_quat_xyzw=anchor_quat_w,
             anchor_lin_vel_b=anchor_lin_vel_b,
             anchor_ang_vel_b=anchor_ang_vel_b,
             body_names=self._body_names,
@@ -162,7 +162,7 @@ class StandingReferenceSource:
             joint_pos=frame.joint_pos,
             joint_vel=frame.joint_vel,
             anchor_pos_z=frame.anchor_pos_z,
-            anchor_quat_wxyz=frame.anchor_quat_wxyz,
+            anchor_quat_xyzw=frame.anchor_quat_xyzw,
             anchor_lin_vel_b=frame.anchor_lin_vel_b,
             anchor_ang_vel_b=frame.anchor_ang_vel_b,
             body_names=frame.body_names,

@@ -90,7 +90,7 @@ class NpzMotionReferenceSource:
         self._anchor_pos_z: torch.Tensor | None = None
         self._auxiliary_joint_pos: torch.Tensor | None = None
         self._auxiliary_joint_vel: torch.Tensor | None = None
-        self._anchor_quat_wxyz: torch.Tensor | None = None
+        self._anchor_quat_xyzw: torch.Tensor | None = None
         self._anchor_lin_vel_b: torch.Tensor | None = None
         self._anchor_ang_vel_b: torch.Tensor | None = None
         self._body_pos_b: torch.Tensor | None = None
@@ -248,7 +248,8 @@ class NpzMotionReferenceSource:
         self._joint_pos = self._to_tensor(joint_pos)
         self._joint_vel = self._to_tensor(joint_vel)
         self._anchor_pos_z = self._to_tensor(body_pos_w[:, anchor_body_index, 2:3])
-        self._anchor_quat_wxyz = self._to_tensor(anchor_quat)
+        # Motion files retain their WXYZ schema; Lab 3 math and live robot data use XYZW.
+        self._anchor_quat_xyzw = self._to_tensor(anchor_quat[:, [1, 2, 3, 0]])
         self._anchor_lin_vel_b = self._to_tensor(
             body_lin_vel_b[:, local_frame_body_index]
         )
@@ -330,7 +331,7 @@ class NpzMotionReferenceSource:
         self._joint_pos = None
         self._joint_vel = None
         self._anchor_pos_z = None
-        self._anchor_quat_wxyz = None
+        self._anchor_quat_xyzw = None
         self._anchor_lin_vel_b = None
         self._anchor_ang_vel_b = None
         self._body_pos_b = None
@@ -344,7 +345,7 @@ class NpzMotionReferenceSource:
         assert self._joint_pos is not None
         assert self._joint_vel is not None
         assert self._anchor_pos_z is not None
-        assert self._anchor_quat_wxyz is not None
+        assert self._anchor_quat_xyzw is not None
         assert self._anchor_lin_vel_b is not None
         assert self._anchor_ang_vel_b is not None
         assert self._body_pos_b is not None
@@ -358,7 +359,7 @@ class NpzMotionReferenceSource:
             joint_pos=_batched(self._joint_pos),
             joint_vel=_batched(self._joint_vel),
             anchor_pos_z=_batched(self._anchor_pos_z),
-            anchor_quat_wxyz=_batched(self._anchor_quat_wxyz),
+            anchor_quat_xyzw=_batched(self._anchor_quat_xyzw),
             anchor_lin_vel_b=_batched(self._anchor_lin_vel_b),
             anchor_ang_vel_b=_batched(self._anchor_ang_vel_b),
             body_names=self._body_names,

@@ -19,7 +19,7 @@ from isaaclab.managers import ManagerTermBase, ObservationTermCfg, SceneEntityCf
 
 def _actuator_joint_pos_feedback(asset: Articulation) -> torch.Tensor:
     """Return actuator feedback, falling back to simulated joint positions."""
-    joint_pos_feedback = asset.data.joint_pos.clone()
+    joint_pos_feedback = asset.data.joint_pos.torch.clone()
     for actuator in asset.actuators.values():
         actuator_feedback = getattr(actuator, "joint_pos_feedback", None)
         if actuator_feedback is None:
@@ -55,7 +55,7 @@ def joint_pos_feedback_rel(
     """Return actuator joint feedback relative to the default joint positions."""
     asset: Articulation = env.scene[asset_cfg.name]
     feedback = _actuator_joint_pos_feedback(asset)
-    return feedback[:, asset_cfg.joint_ids] - asset.data.default_joint_pos[:, asset_cfg.joint_ids]
+    return feedback[:, asset_cfg.joint_ids] - asset.data.default_joint_pos.torch[:, asset_cfg.joint_ids]
 
 
 class finite_difference_obs(ManagerTermBase):

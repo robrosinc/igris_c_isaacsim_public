@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import time
 from pathlib import Path
 
@@ -83,8 +84,18 @@ parser.add_argument(
     help="GUI viewport source.",
 )
 AppLauncher.add_app_launcher_args(parser)
+parser.add_argument("--headless", action="store_true", help="Run without the Kit window.")
+parser.add_argument("--enable_cameras", action="store_true", help="Create all camera sensors.")
 parser.set_defaults(device="auto")
 args_cli = parser.parse_args()
+if (
+    args_cli.visualizer is None
+    and not args_cli.headless
+    and os.environ.get("HEADLESS", "0") != "1"
+    and args_cli.livestream not in (1, 2)
+    and os.environ.get("LIVESTREAM", "0") == "0"
+):
+    args_cli.visualizer = ["kit"]
 if args_cli.num_envs <= 0:
     parser.error("--num_envs must be positive")
 if args_cli.torch_num_threads < 1:
@@ -334,6 +345,7 @@ def main() -> None:
                 )
                 if sleep_time > 0.0:
                     time.sleep(sleep_time)
+        print(f"[INFO]: Completed {step_count} policy steps.", flush=True)
     finally:
         env.close()
 
@@ -341,5 +353,12 @@ def main() -> None:
 if __name__ == "__main__":
     try:
         main()
+    except KeyboardInterrupt:
+        print("[INFO]: Interrupted by user.", flush=True)
+    except Exception:
+        import traceback
+
+        traceback.print_exc()
+        raise
     finally:
         simulation_app.close()

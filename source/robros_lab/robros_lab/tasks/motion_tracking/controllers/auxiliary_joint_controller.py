@@ -79,7 +79,7 @@ class WristHandPoseController:
 
         self._joint_ids = joint_ids
         self._distal_joint_ids = distal_joint_ids
-        self._position_target = robot.data.default_joint_pos[:, joint_ids].clone()
+        self._position_target = robot.data.default_joint_pos.torch[:, joint_ids].clone()
         self._velocity_target = torch.zeros_like(self._position_target)
         self._middle_target_indices = [
             AUXILIARY_JOINT_NAMES.index(middle_name) for _, middle_name, _, _ in DISTAL_COUPLING
@@ -87,8 +87,8 @@ class WristHandPoseController:
         self._distal_multipliers = self._position_target.new_tensor(
             [multiplier for _, _, _, multiplier in DISTAL_COUPLING]
         ).unsqueeze(0)
-        distal_position_limits = robot.data.joint_pos_limits[:, distal_joint_ids, :]
-        position_limits = robot.data.joint_pos_limits[:, joint_ids, :]
+        distal_position_limits = robot.data.joint_pos_limits.torch[:, distal_joint_ids, :]
+        position_limits = robot.data.joint_pos_limits.torch[:, joint_ids, :]
         self._lower_limits = position_limits[..., 0].clone()
         self._upper_limits = position_limits[..., 1].clone()
 

@@ -80,11 +80,12 @@ def _quat_multiply(
 
 
 def _camera_rotation(axis: tuple[float, float, float], angle_degrees: float) -> tuple[float, float, float, float]:
-    """Apply a Link_Neck_Pitch-axis installation rotation to the base camera rotation."""
+    """Return the camera installation rotation in Isaac Lab 3 XYZW order."""
 
     base_rotation = (0.5, -0.5, 0.5, -0.5)
     installation_rotation = _quat_from_axis_angle(axis, angle_degrees)
-    return _quat_multiply(installation_rotation, base_rotation)
+    w, x, y, z = _quat_multiply(installation_rotation, base_rotation)
+    return (x, y, z, w)
 
 
 HEAD_RGB_CAMERA_ROT = _camera_rotation((0.0, 1.0, 0.0), 54.0)
@@ -202,8 +203,8 @@ IGRIS_C_LEFT_WRIST_CAMERA_CFG = CameraCfg(
     ),
     offset=CameraCfg.OffsetCfg(
         pos=(-0.024420, 0.010317, 0.034793),
-        # URDF camera_link rpy=(-2.7823, -0.5795, 0.9576), converted to (w, x, y, z).
-        rot=(0.281491451510162, -0.813343087073706, -0.479715245579771, -0.170613213422809),
+        # URDF camera_link rpy=(-2.7823, -0.5795, 0.9576), in XYZW order.
+        rot=(-0.813343087073706, -0.479715245579771, -0.170613213422809, 0.281491451510162),
         convention="world",
     ),
 )
@@ -223,8 +224,8 @@ IGRIS_C_RIGHT_WRIST_CAMERA_CFG = CameraCfg(
     ),
     offset=CameraCfg.OffsetCfg(
         pos=(-0.024420, -0.010317, 0.034793),
-        # URDF camera_link rpy=(2.7845, -0.5769, -0.9588), converted to (w, x, y, z).
-        rot=(0.280192038750642, 0.813790055664715, -0.479987262874607, 0.169854037927043),
+        # URDF camera_link rpy=(2.7845, -0.5769, -0.9588), in XYZW order.
+        rot=(0.813790055664715, -0.479987262874607, 0.169854037927043, 0.280192038750642),
         convention="world",
     ),
 )
