@@ -5,7 +5,7 @@ REPOSITORY_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 VIRTUAL_ENV="${REPOSITORY_ROOT}/.venv"
 
 if [[ ! -x "${VIRTUAL_ENV}/bin/python" ]]; then
-    echo "Isaac environment is missing. Run './setup_isaas.sh' from ${REPOSITORY_ROOT}." >&2
+    echo "Isaac environment is missing. Run './setup_isaac.sh' from ${REPOSITORY_ROOT}." >&2
     exit 1
 fi
 if [[ $# -eq 0 ]]; then
