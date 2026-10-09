@@ -114,7 +114,7 @@ them into `third_party/`.
 ### 3. Install the locked Python environment
 
 ```bash
-./setup_isaas.sh
+./setup_isaac.sh
 ```
 
 The setup script initializes the pinned submodules and uses `uv sync --locked` to install Python 3.12, Isaac Sim, Isaac Lab, PyTorch, and ROBROS Lab into this repository's `.venv`. The first sync downloads several gigabytes. Run project scripts through `./run_isaac.sh`; it selects that environment without shell activation.
