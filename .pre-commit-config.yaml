@@ -40,7 +40,7 @@ repos:
         args:
           # - --remove-header    # Remove existing license headers. Useful when updating license.
           - --license-filepath
-          - .github/LICENSE_HEADER.txt
+          - LICENSE_HEADER.txt
           - --use-current-year
 
 exclude: ^(third_party/|_isaac_lab/|\.vscode/|\.github/|outputs/)
